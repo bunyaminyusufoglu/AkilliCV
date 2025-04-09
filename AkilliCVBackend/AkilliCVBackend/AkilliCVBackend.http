@@ -1,0 +1,6 @@
+@AkilliCVBackend_HostAddress = http://localhost:5189
+
+GET {{AkilliCVBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

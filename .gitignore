@@ -1,0 +1,15 @@
+# Visual Studio folders
+.vs/
+
+# Visual Studio Code folders
+.vscode/
+
+# .NET build results
+bin/
+obj/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
