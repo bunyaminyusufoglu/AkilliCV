@@ -39,5 +39,37 @@ namespace AkilliCVBackend.Controllers
 
             return Ok("Giriş başarılı.");
         }
+
+
+        [HttpPut("updateProfile")]
+        public async Task<IActionResult> UpdateProfile(int userId, [FromBody] User updatedUser)
+        {
+            var existingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+
+            if (existingUser == null)
+                return NotFound("Kullanıcı bulunamadı.");
+
+            existingUser.Name = updatedUser.Name;
+            existingUser.Surname = updatedUser.Surname;
+            existingUser.Email = updatedUser.Email;
+
+            _context.Users.Update(existingUser);
+            await _context.SaveChangesAsync();
+
+            return Ok("Profil başarıyla güncellendi.");
+        }
+
+        [HttpGet("profile/{userId}")]
+        public async Task<IActionResult> GetProfile(int userId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+
+            if (user == null)
+                return NotFound("Kullanıcı bulunamadı.");
+
+            return Ok(user);
+        }
+
+
     }
 }

@@ -1,7 +1,11 @@
 using AkilliCVBackend.Data;
+using AkilliCVBackend.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// DI için AIService ekle
+builder.Services.AddHttpClient<AIService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
