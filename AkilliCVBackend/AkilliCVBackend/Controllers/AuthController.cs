@@ -21,12 +21,17 @@ namespace AkilliCVBackend.Controllers
         {
             var existingUser = await _context.Users.FirstOrDefaultAsync(x => x.Email == user.Email);
             if (existingUser != null)
-                return BadRequest("Bu e-posta zaten kayıtlı.");
+                return BadRequest(new { message = "Bu e-posta zaten kayıtlı." });
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-            return Ok("Kayıt başarılı.");
+
+            return Ok(new
+            {
+                message = "Kayıt başarılı.",
+            });
         }
+
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] User user)
@@ -35,10 +40,15 @@ namespace AkilliCVBackend.Controllers
                 .FirstOrDefaultAsync(x => x.Email == user.Email && x.Password == user.Password);
 
             if (existingUser == null)
-                return Unauthorized("Geçersiz e-posta veya şifre.");
+                return Unauthorized(new { message = "Geçersiz e-posta veya şifre." });
 
-            return Ok("Giriş başarılı.");
+            return Ok(new
+            {
+                message = "Giriş başarılı.",
+                userId = existingUser.Id // veya UserId alanı neyse onu döndür
+            });
         }
+
 
 
         [HttpPut("updateProfile")]

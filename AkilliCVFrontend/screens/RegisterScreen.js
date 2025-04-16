@@ -9,7 +9,7 @@ const RegisterScreen = ({ navigation }) => {
 
   const handleRegister = async () => {
     try {
-      const response = await fetch('http://YOUR_API_URL/api/auth/register', {
+      const response = await fetch('http://192.168.1.105:7131/api/Auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -21,12 +21,14 @@ const RegisterScreen = ({ navigation }) => {
           password
         })
       });
-
+  
+      const data = await response.json();
+      console.log('Register yanıtı:', data);
+  
       if (response.ok) {
-        Alert.alert('Kayıt başarılı!');
-        navigation.navigate('Login');  // Kayıt başarılı olduğunda giriş sayfasına git
+        Alert.alert('Kayıt başarılı!', data.message || 'Hesabınız başarıyla oluşturuldu.');
+        navigation.navigate('Login');
       } else {
-        const data = await response.json();
         Alert.alert('Hata', data.message || 'Kayıt sırasında bir hata oluştu.');
       }
     } catch (error) {
@@ -34,6 +36,7 @@ const RegisterScreen = ({ navigation }) => {
       console.error(error);
     }
   };
+  
 
   return (
     <View style={styles.container}>

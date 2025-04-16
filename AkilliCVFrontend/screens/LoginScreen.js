@@ -7,32 +7,21 @@ const LoginScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
-    // Geçici giriş kontrolü
-    if (email === 'by@by' && password === '123') {
-      Alert.alert('Giriş başarılı!', 'Geçici kullanıcı ile giriş yaptınız.');
-      await AsyncStorage.setItem('userId', 'gecici-123');
-      navigation.replace('HomeTabs');
-      return;
-    }
-
     try {
-      const response = await fetch('http://YOUR_API_URL/api/auth/login', {
+      const response = await fetch('http://192.168.1.105:7131/api/Auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          email,
-          password
-        })
+        body: JSON.stringify({ email, password })
       });
-
+  
       const data = await response.json();
       console.log('Login yanıtı:', data);
-
+  
       if (response.ok) {
         await AsyncStorage.setItem('userId', data.userId.toString());
-        Alert.alert('Giriş başarılı!');
+        Alert.alert('Giriş başarılı!', data.message);
         navigation.replace('Home');
       } else {
         Alert.alert('Hata', data.message || 'Giriş sırasında bir hata oluştu.');
@@ -42,6 +31,7 @@ const LoginScreen = ({ navigation }) => {
       console.error(error);
     }
   };
+  
 
   return (
     <View style={styles.container}>
@@ -71,7 +61,7 @@ const LoginScreen = ({ navigation }) => {
 
         <TouchableOpacity
           style={styles.registerLink}
-          onPress={() => navigation.navigate('Register')} // Kaydol ekranına yönlendirme
+          onPress={() => navigation.navigate('Register')}
         >
           <Text style={styles.registerText}>Hesabınız yok mu? Kaydol</Text>
         </TouchableOpacity>
@@ -85,7 +75,7 @@ export default LoginScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#3182ce', // Gradyan mavi arka plan
+    backgroundColor: '#3182ce',
     justifyContent: 'center',
     alignItems: 'center',
   },

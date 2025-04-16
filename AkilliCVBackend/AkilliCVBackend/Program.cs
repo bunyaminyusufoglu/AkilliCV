@@ -4,17 +4,30 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DI için AIService ekle
-builder.Services.AddHttpClient<AIService>();
+// CORS yapýlandýrmasý
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()  // Herhangi bir origin'e izin ver
+              .AllowAnyHeader()  // Tüm header'lara izin ver
+              .AllowAnyMethod(); // Tüm metodlara izin ver
+    });
+});
 
+builder.Services.AddHttpClient<AIService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// SQL Server baðlantýsý
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseInMemoryDatabase("TestDb")); // hýzlý test için InMemory kullanýyoruz
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
+
+// CORS kullanýmýný etkinleþtir
+app.UseCors("AllowAll");
 
 if (app.Environment.IsDevelopment())
 {
@@ -25,4 +38,11 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    context.Database.Migrate(); // Veritabanýný güncelle
+}
+
 app.Run();
