@@ -1,26 +1,98 @@
-// /src/components/Header.js
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable, Modal } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { useNavigation } from '@react-navigation/native';
 
 const Header = () => {
+  const [menuVisible, setMenuVisible] = useState(false);
+  const navigation = useNavigation();
+
+  const handleProfile = () => {
+    setMenuVisible(false);
+    navigation.navigate('ProfileEdit');
+  };
+
+  const handleLogout = () => {
+    setMenuVisible(false);
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    });
+  };
+
   return (
     <View style={styles.headerContainer}>
       <Text style={styles.title}>AKILLI CV</Text>
+
+      <TouchableOpacity onPress={() => setMenuVisible(true)} style={styles.iconContainer}>
+        <Icon name="person-circle-outline" size={30} color="#fff" />
+      </TouchableOpacity>
+
+      {/* Modal Menü */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={menuVisible}
+        onRequestClose={() => setMenuVisible(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setMenuVisible(false)}>
+          <View style={styles.dropdownMenu}>
+            <Pressable style={styles.menuItem} onPress={handleProfile}>
+              <Text style={styles.menuText}>Profilim</Text>
+            </Pressable>
+            <Pressable style={styles.menuItem} onPress={handleLogout}>
+              <Text style={styles.menuText}>Çıkış Yap</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   headerContainer: {
+    flexDirection: 'row',
     paddingTop: 20,
     paddingBottom: 10,
+    paddingHorizontal: 15,
     backgroundColor: '#3182ce',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    zIndex: 100,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  iconContainer: {
+    padding: 5,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-end',
+    paddingTop: 60,
+    paddingRight: 15,
+  },
+  dropdownMenu: {
+    width: 150,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    elevation: 5,
+    paddingVertical: 5,
+  },
+  menuItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderBottomColor: '#eee',
+    borderBottomWidth: 1,
+  },
+  menuText: {
+    fontSize: 16,
+    color: '#333',
   },
 });
 

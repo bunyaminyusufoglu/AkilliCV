@@ -9,9 +9,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()  // Herhangi bir origin'e izin ver
-              .AllowAnyHeader()  // Tüm header'lara izin ver
-              .AllowAnyMethod(); // Tüm metodlara izin ver
+        policy.AllowAnyOrigin()   // Herhangi bir origin'e izin ver
+              .AllowAnyHeader()   // Tüm header'lara izin ver
+              .AllowAnyMethod();  // Tüm metodlara izin ver
     });
 });
 
@@ -35,7 +35,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 

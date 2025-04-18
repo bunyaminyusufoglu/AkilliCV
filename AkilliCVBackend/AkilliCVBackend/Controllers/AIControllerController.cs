@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using AkilliCVBackend.Services;
-using AkilliCVBackend.Data;  // ApplicationDbContext'in bulunduğu namespace
+using AkilliCVBackend.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -51,7 +51,7 @@ namespace AkilliCVBackend.Controllers
                 }
 
                 _logger.LogInformation($"AI analysis completed successfully for user with ID {userId}.");
-                return Ok(analysisResult);  // JSON formatında AI'nin önerilerini döner
+                return Ok(analysisResult);
             }
             catch (Exception ex)
             {

@@ -32,7 +32,6 @@ namespace AkilliCVBackend.Controllers
             });
         }
 
-
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] User user)
         {
@@ -48,8 +47,6 @@ namespace AkilliCVBackend.Controllers
                 userId = existingUser.Id // veya UserId alanı neyse onu döndür
             });
         }
-
-
 
         [HttpPut("updateProfile")]
         public async Task<IActionResult> UpdateProfile(int userId, [FromBody] User updatedUser)

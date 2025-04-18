@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Header from '../components/Header';
+
 
 const HomeScreen = ({ navigation }) => {
   const [hasCV, setHasCV] = useState(false);
@@ -37,6 +39,10 @@ const HomeScreen = ({ navigation }) => {
   };
 
   return (
+
+    <View style={{ flex: 1 }}>
+      <Header />
+    
     <View style={styles.container}>
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
@@ -94,6 +100,7 @@ const HomeScreen = ({ navigation }) => {
           <Text style={styles.buttonText}>İş Arama</Text>
         </TouchableOpacity>
       </View>
+    </View>
     </View>
   );
 };
