@@ -4,7 +4,7 @@ import Header from '../components/Header';
 
 const CVAnalizScreen = () => {
   const [loading, setLoading] = useState(false);
-  const userId = 1; // örnek kullanıcı id, login'den çekiyorsan buraya ekle
+  const userId = 1;
 
   const analyzeCV = async () => {
     try {

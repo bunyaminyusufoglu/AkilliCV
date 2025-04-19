@@ -22,7 +22,7 @@ const LoginScreen = ({ navigation }) => {
       if (response.ok) {
         await AsyncStorage.setItem('userId', data.userId.toString());
         Alert.alert('Giriş başarılı!', data.message);
-        navigation.replace('Home');
+        navigation.replace('AnaSayfa');
       } else {
         Alert.alert('Hata', data.message || 'Giriş sırasında bir hata oluştu.');
       }
@@ -61,7 +61,7 @@ const LoginScreen = ({ navigation }) => {
 
         <TouchableOpacity
           style={styles.registerLink}
-          onPress={() => navigation.navigate('Register')}
+          onPress={() => navigation.navigate('Kaydol')}
         >
           <Text style={styles.registerText}>Hesabınız yok mu? Kaydol</Text>
         </TouchableOpacity>
@@ -126,6 +126,6 @@ const styles = StyleSheet.create({
     color: '#3182ce',
     fontWeight: 'bold',
     fontSize: 16,
-    textDecorationLine: 'underline', // Altı çizili stil
+    textDecorationLine: 'underline',
   },
 });

@@ -9,26 +9,32 @@ const Header = () => {
 
   const handleProfile = () => {
     setMenuVisible(false);
-    navigation.navigate('ProfileEdit');
+    navigation.navigate('Profilim');
   };
 
   const handleLogout = () => {
     setMenuVisible(false);
     navigation.reset({
       index: 0,
-      routes: [{ name: 'Login' }],
+      routes: [{ name: 'Giris Yap' }],
     });
+  };
+
+  const goToHome = () => {
+    navigation.navigate('AnaSayfa');
   };
 
   return (
     <View style={styles.headerContainer}>
-      <Text style={styles.title}>AKILLI CV</Text>
+      <TouchableOpacity onPress={goToHome}>
+        <Text style={styles.title}>AKILLI CV</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity onPress={() => setMenuVisible(true)} style={styles.iconContainer}>
         <Icon name="person-circle-outline" size={30} color="#fff" />
       </TouchableOpacity>
 
-      {/* Modal Menü */}
+      
       <Modal
         animationType="fade"
         transparent={true}
@@ -59,7 +65,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#3182ce',
     alignItems: 'center',
     justifyContent: 'space-between',
-    zIndex: 100,
   },
   title: {
     fontSize: 24,

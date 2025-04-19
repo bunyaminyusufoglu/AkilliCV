@@ -27,7 +27,7 @@ const RegisterScreen = ({ navigation }) => {
   
       if (response.ok) {
         Alert.alert('Kayıt başarılı!', data.message || 'Hesabınız başarıyla oluşturuldu.');
-        navigation.navigate('Login');
+        navigation.navigate('Giris Yap');
       } else {
         Alert.alert('Hata', data.message || 'Kayıt sırasında bir hata oluştu.');
       }
@@ -42,14 +42,12 @@ const RegisterScreen = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.card}>
 
-        {/* Logo */}
         <Image
           source={require('../assets/logo.png')}
           style={styles.logo}
           resizeMode="contain"
         />
 
-        {/* Kayıt Formu */}
         <TextInput
           placeholder="Ad"
           value={name}
@@ -77,15 +75,13 @@ const RegisterScreen = ({ navigation }) => {
           secureTextEntry
         />
 
-        {/* Kayıt Butonu */}
         <TouchableOpacity style={styles.button} onPress={handleRegister}>
           <Text style={styles.buttonText}>Kayıt Ol</Text>
         </TouchableOpacity>
 
-        {/* Diğer işlemler için link */}
         <TouchableOpacity
           style={styles.loginLink}
-          onPress={() => navigation.navigate('Login')}  // Giriş yap sayfasına yönlendirme
+          onPress={() => navigation.navigate('Login')}
         >
           <Text style={styles.loginText}>Zaten hesabınız var mı? Giriş Yap</Text>
         </TouchableOpacity>
@@ -99,7 +95,7 @@ export default RegisterScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#3182ce',  // Mavi arka plan
+    backgroundColor: '#3182ce',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -150,6 +146,6 @@ const styles = StyleSheet.create({
     color: '#3182ce',
     fontWeight: 'bold',
     fontSize: 16,
-    textDecorationLine: 'underline', // Altı çizili metin
+    textDecorationLine: 'underline',
   },
 });

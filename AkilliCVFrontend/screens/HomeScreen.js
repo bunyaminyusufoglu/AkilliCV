@@ -23,19 +23,19 @@ const HomeScreen = ({ navigation }) => {
   }, []);
 
   const handleCVUpload = () => {
-    navigation.navigate('CVUpload');
+    navigation.navigate('Profilim');
   };
 
   const handleCVUpdate = () => {
-    navigation.navigate('CVUpdate');
+    navigation.navigate('Profilim');
   };
 
   const handleProfileEdit = () => {
-    navigation.navigate('ProfileEdit');
+    navigation.navigate('Profilim');
   };
 
   const handleJobSearch = () => {
-    navigation.navigate('JobSearch');
+    navigation.navigate('İş İlanları');
   };
 
   return (
