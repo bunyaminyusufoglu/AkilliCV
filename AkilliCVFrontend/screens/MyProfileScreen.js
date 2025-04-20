@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, TextInput, Button, StyleSheet,
-  Alert, TouchableOpacity, KeyboardAvoidingView, Platform
+  Alert, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -138,7 +138,7 @@ const MyProfileScreen = () => {
   };
 
   const renderInputOrText = (label, value, key, isEditing) => (
-    <View style={styles.infoRow} key={key}>
+    <View style={styles.inputItem} key={key}>
       <Text style={styles.infoLabel}>{label}</Text>
       {isEditing ? (
         <TextInput
@@ -155,11 +155,8 @@ const MyProfileScreen = () => {
   return (
     <View style={{ flex: 1 }}>
       <Header />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-      >
-        <View style={styles.container}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={styles.container}>
           {/* Temel Bilgiler Kutusu */}
           <View style={styles.box}>
             <View style={styles.boxHeader}>
@@ -168,53 +165,12 @@ const MyProfileScreen = () => {
                 <Text style={styles.editButton}>{editingBasic ? 'İptal' : 'Düzenle'}</Text>
               </TouchableOpacity>
             </View>
-            <Text style={styles.label}>Ad</Text>
-            {editingBasic ? (
-              <TextInput
-                style={styles.input}
-                value={profile.name}
-                onChangeText={(text) => setProfile({ ...profile, name: text })}
-              />
-            ) : (
-              <Text style={styles.text}>{profile.name}</Text>
-            )}
-
-            <Text style={styles.label}>Soyad</Text>
-            {editingBasic ? (
-              <TextInput
-                style={styles.input}
-                value={profile.surname}
-                onChangeText={(text) => setProfile({ ...profile, surname: text })}
-              />
-            ) : (
-              <Text style={styles.text}>{profile.surname}</Text>
-            )}
-
-            <Text style={styles.label}>E-posta</Text>
-            {editingBasic ? (
-              <TextInput
-                style={styles.input}
-                value={profile.email}
-                onChangeText={(text) => setProfile({ ...profile, email: text })}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            ) : (
-              <Text style={styles.text}>{profile.email}</Text>
-            )}
-
-            <Text style={styles.label}>Şifre</Text>
-            {editingBasic ? (
-              <TextInput
-                style={styles.input}
-                value={profile.password}
-                onChangeText={(text) => setProfile({ ...profile, password: text })}
-                secureTextEntry
-              />
-            ) : (
-              <Text style={styles.text}>******</Text>
-            )}
-
+            <View style={styles.inputWrapper}>
+              {renderInputOrText('Ad', profile.name, 'name', editingBasic)}
+              {renderInputOrText('Soyad', profile.surname, 'surname', editingBasic)}
+              {renderInputOrText('E-posta', profile.email, 'email', editingBasic)}
+              {renderInputOrText('Şifre', '******', 'password', editingBasic)}
+            </View>
             {editingBasic && (
               <View style={styles.buttonContainer}>
                 <Button
@@ -235,17 +191,18 @@ const MyProfileScreen = () => {
                 <Text style={styles.editButton}>{editingDetails ? 'İptal' : 'Düzenle'}</Text>
               </TouchableOpacity>
             </View>
-            {renderInputOrText('Doğum Tarihi', details.dateOfBirth, 'dateOfBirth', editingDetails)}
-            {renderInputOrText('Telefon Numarası', details.phoneNumber, 'phoneNumber', editingDetails)}
-            {renderInputOrText('Eğitim', details.education, 'education', editingDetails)}
-            {renderInputOrText('İş Deneyimi', details.workExperience, 'workExperience', editingDetails)}
-            {renderInputOrText('Yetenekler', details.skills, 'skills', editingDetails)}
-            {renderInputOrText('Diller', details.languages, 'languages', editingDetails)}
-            {renderInputOrText('Referanslar', details.references, 'references', editingDetails)}
-            {renderInputOrText('Portföy Linki', details.portfolioLink, 'portfolioLink', editingDetails)}
-            {renderInputOrText('Beklenen Maaş', details.desiredSalary, 'desiredSalary', editingDetails)}
-            {renderInputOrText('Çalışma Tercihi', details.workTypePreference, 'workTypePreference', editingDetails)}
-
+            <View style={styles.inputWrapper}>
+              {renderInputOrText('Doğum Tarihi', details.dateOfBirth, 'dateOfBirth', editingDetails)}
+              {renderInputOrText('Telefon Numarası', details.phoneNumber, 'phoneNumber', editingDetails)}
+              {renderInputOrText('Eğitim', details.education, 'education', editingDetails)}
+              {renderInputOrText('İş Deneyimi', details.workExperience, 'workExperience', editingDetails)}
+              {renderInputOrText('Yetenekler', details.skills, 'skills', editingDetails)}
+              {renderInputOrText('Diller', details.languages, 'languages', editingDetails)}
+              {renderInputOrText('Referanslar', details.references, 'references', editingDetails)}
+              {renderInputOrText('Portföy Linki', details.portfolioLink, 'portfolioLink', editingDetails)}
+              {renderInputOrText('Beklenen Maaş', details.desiredSalary, 'desiredSalary', editingDetails)}
+              {renderInputOrText('Çalışma Tercihi', details.workTypePreference, 'workTypePreference', editingDetails)}
+            </View>
             {editingDetails && (
               <View style={styles.buttonContainer}>
                 <Button
@@ -281,7 +238,7 @@ const MyProfileScreen = () => {
               </View>
             )}
           </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
@@ -322,20 +279,15 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginVertical: 5,
   },
-  input: {
-    borderColor: '#ddd',
-    borderWidth: 1,
-    padding: 10,
-    borderRadius: 6,
-    fontSize: 16,
-    marginBottom: 15,
+  inputWrapper: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 10,
   },
-  text: {
-    fontSize: 16,
+  inputItem: {
+    width: '48%',
     marginBottom: 15,
-  },
-  infoRow: {
-    marginBottom: 10,
   },
   infoLabel: {
     fontWeight: '500',
@@ -351,6 +303,10 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 16,
     marginTop: 5,
+  },
+  text: {
+    fontSize: 16,
+    marginBottom: 10,
   },
   buttonContainer: {
     marginTop: 20,
