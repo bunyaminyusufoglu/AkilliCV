@@ -2,6 +2,7 @@
 using AkilliCVBackend.Data;
 using AkilliCVBackend.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace AkilliCVBackend.Controllers
 {
@@ -26,10 +27,7 @@ namespace AkilliCVBackend.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return Ok(new
-            {
-                message = "Kayıt başarılı.",
-            });
+            return Ok(new { message = "Kayıt başarılı." });
         }
 
         [HttpPost("login")]
@@ -41,14 +39,10 @@ namespace AkilliCVBackend.Controllers
             if (existingUser == null)
                 return Unauthorized(new { message = "Geçersiz e-posta veya şifre." });
 
-            return Ok(new
-            {
-                message = "Giriş başarılı.",
-                userId = existingUser.Id // veya UserId alanı neyse onu döndür
-            });
+            return Ok(new { message = "Giriş başarılı.", userId = existingUser.Id });
         }
 
-        [HttpPut("updateProfile")]
+        [HttpPut("updateProfile/{userId}")]
         public async Task<IActionResult> UpdateProfile(int userId, [FromBody] User updatedUser)
         {
             var existingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
@@ -77,6 +71,18 @@ namespace AkilliCVBackend.Controllers
             return Ok(user);
         }
 
+        [HttpDelete("delete/{userId}")]
+        public async Task<IActionResult> DeleteUser(int userId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
 
+            if (user == null)
+                return NotFound(new { message = "Kullanıcı bulunamadı." });
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Kullanıcı başarıyla silindi." });
+        }
     }
 }

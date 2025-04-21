@@ -16,7 +16,6 @@ namespace AkilliCVBackend.Controllers
             _context = context;
         }
 
-        // Kullanıcı profilini oluşturma
         [HttpPost("createProfile")]
         public IActionResult CreateProfile([FromBody] UserProfile userProfile)
         {
@@ -29,7 +28,6 @@ namespace AkilliCVBackend.Controllers
             return Ok("Profil başarıyla oluşturuldu.");
         }
 
-        // Kullanıcı profilini güncelleme
         [HttpPut("updateProfile/{userId}")]
         public IActionResult UpdateProfile(int userId, [FromBody] UserProfile userProfile)
         {
@@ -55,7 +53,6 @@ namespace AkilliCVBackend.Controllers
             return Ok("Profil başarıyla güncellendi.");
         }
 
-        // Kullanıcı profilini alma
         [HttpGet("getProfile/{userId}")]
         public IActionResult GetProfile(int userId)
         {

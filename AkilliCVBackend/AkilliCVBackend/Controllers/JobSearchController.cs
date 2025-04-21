@@ -26,7 +26,7 @@ namespace AkilliCVBackend.Controllers
                 return NotFound("Kullanıcı profili bulunamadı.");
 
             var skills = userProfile.Skills.Split(',');
-            var keyword = Uri.EscapeDataString(string.Join(" ", skills)); // "React Node.js JavaScript"
+            var keyword = Uri.EscapeDataString(string.Join(" ", skills));
 
             var url = $"https://linkedin-job-api.p.rapidapi.com/job/search?keyword={keyword}&page=1";
 
@@ -38,7 +38,7 @@ namespace AkilliCVBackend.Controllers
                 Headers =
                 {
                     { "x-rapidapi-host", "linkedin-job-api.p.rapidapi.com" },
-                    { "x-rapidapi-key", "22c4d851afmsh0babdd08f5b66e4p151ce5jsn71f6b54b4d02" } // Senin API key’in
+                    { "x-rapidapi-key", "22c4d851afmsh0babdd08f5b66e4p151ce5jsn71f6b54b4d02" }
                 },
             };
 
