@@ -46,7 +46,7 @@ const MyProfileScreen = () => {
       try {
         const storedUserId = await AsyncStorage.getItem('userId');
         if (storedUserId) {
-          const response = await axios.get(`https://senin-api-urlun.com/api/Auth/profile/${storedUserId}`);
+          const response = await axios.get(`http://192.168.1.105:5189/api/Auth/profile/${storedUserId}`);
           const data = response.data;
           setProfile({
             name: data.name,
@@ -88,7 +88,7 @@ const MyProfileScreen = () => {
     setLoading(true);
     try {
       const payload = { ...profile, ...details };
-      await axios.put('https://senin-api-urlun.com/api/Auth/updateProfile', payload);
+      await axios.put('http://192.168.1.105:5189/api/Auth/updateProfile', payload);
       Alert.alert('Başarılı', 'Profiliniz güncellendi.');
       setEditingBasic(false);
       setEditingDetails(false);
@@ -118,7 +118,7 @@ const MyProfileScreen = () => {
           type: 'application/pdf',
         });
 
-        await axios.post('https://senin-api-urlun.com/api/CV/upload', formData, {
+        await axios.post('http://192.168.1.105:5189/api/CV/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
 

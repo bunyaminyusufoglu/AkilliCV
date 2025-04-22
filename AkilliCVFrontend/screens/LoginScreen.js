@@ -13,7 +13,7 @@ const LoginScreen = ({ navigation }) => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, name: '', surname: '' })
       });
   
       const data = await response.json();

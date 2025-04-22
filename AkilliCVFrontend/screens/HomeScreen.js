@@ -10,15 +10,27 @@ const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     const checkCVAndProfile = async () => {
-      const userCV = await AsyncStorage.getItem('userCV');
-      const profileData = await AsyncStorage.getItem('userProfile');
-      if (userCV) {
-        setHasCV(true);
-      }
-      if (profileData) {
-        setIsProfileComplete(true);
+      try {
+        const userId = await AsyncStorage.getItem('userId');
+
+        if (userId) {
+          const response = await axios.post('http://192.168.1.105:5189/api/CV/CheckUserCV', { userId: parseInt(userId) });
+          
+          if (response.data === true) {
+            setHasCV(true);
+          }
+        }
+
+        const profileData = await AsyncStorage.getItem('userProfile');
+        if (profileData) {
+          setIsProfileComplete(true);
+        }
+
+      } catch (error) {
+        console.error('CV kontrolü sırasında hata:', error);
       }
     };
+
     checkCVAndProfile();
   }, []);
 
@@ -64,7 +76,7 @@ const HomeScreen = ({ navigation }) => {
           <Text style={styles.sectionTitle}>CV Durumu</Text>
           {!hasCV ? (
             <View style={styles.alertBox}>
-              <Text style={styles.alertText}>CV'nizi yüklemediniz. CV'nizi yükleyip analiz ettirmeye başlayabilirsiniz.</Text>
+              <Text style={styles.alertText}>CV'nizin güncel olduğundan emin olun.</Text>
               <TouchableOpacity onPress={handleCVUpload} style={styles.button}>
                 <Text style={styles.buttonText}>CV Yükle</Text>
               </TouchableOpacity>
@@ -83,7 +95,7 @@ const HomeScreen = ({ navigation }) => {
           <Text style={styles.sectionTitle}>Profil Durumu</Text>
           {!isProfileComplete ? (
             <View style={styles.alertBox}>
-              <Text style={styles.alertText}>Profilinizi tam doldurduğunuzdan emin olun.</Text>
+              <Text style={styles.alertText}>Profilinizin güncel olduğundan emin olun.</Text>
               <TouchableOpacity onPress={handleProfileEdit} style={styles.button}>
                 <Text style={styles.buttonText}>Profil Düzenle</Text>
               </TouchableOpacity>

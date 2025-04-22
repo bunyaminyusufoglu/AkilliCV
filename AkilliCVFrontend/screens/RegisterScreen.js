@@ -81,7 +81,7 @@ const RegisterScreen = ({ navigation }) => {
 
         <TouchableOpacity
           style={styles.loginLink}
-          onPress={() => navigation.navigate('Login')}
+          onPress={() => navigation.navigate('Giris Yap')}
         >
           <Text style={styles.loginText}>Zaten hesabınız var mı? Giriş Yap</Text>
         </TouchableOpacity>

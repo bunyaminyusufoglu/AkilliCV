@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import Header from '../components/Header';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const JobSearchScreen = () => {
+  const [userId, setUserId] = useState(null);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [jobResults, setJobResults] = useState([]);
@@ -11,7 +13,14 @@ const JobSearchScreen = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch('http://192.168.1.105:7131/api/Auth/login');
+        const storedUserId = await AsyncStorage.getItem('userId');
+        setUserId(storedUserId);
+        if (!storedUserId) {
+          Alert.alert('Hata', 'Kullanıcı ID bulunamadı.');
+          return;
+        }
+
+        const response = await fetch(`http://192.168.1.105:5189/api/UserProfile/getProfile/${storedUserId}`);
         const data = await response.json();
         setUserData(data);
       } catch (error) {
@@ -56,7 +65,7 @@ const JobSearchScreen = () => {
   if (!userData) {
     return (
       <View style={styles.container}>
-        <Text>Kullanıcı verisi bulunamadı.</Text>
+        <Text>Kullanıcı verisi bulunamadı. {userId}</Text>
       </View>
     );
   }
@@ -68,20 +77,62 @@ const JobSearchScreen = () => {
         <Text style={styles.title}>Kullanıcı Bilgileri</Text>
 
         <View style={styles.card}>
-          <Text style={styles.infoLabel}>Ad Soyad:</Text>
-          <Text style={styles.infoText}>{userData.name} {userData.surname}</Text>
+          <View style={styles.row}>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>Telefon:</Text>
+              <Text style={styles.infoText}>{userData.phoneNumber}</Text>
+            </View>
 
-          <Text style={styles.infoLabel}>Email:</Text>
-          <Text style={styles.infoText}>{userData.email}</Text>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>Email:</Text>
+              <Text style={styles.infoText}>{userData.email}</Text>
+            </View>
 
-          <Text style={styles.infoLabel}>Telefon:</Text>
-          <Text style={styles.infoText}>{userData.phone}</Text>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>Doğum Tarihi:</Text>
+              <Text style={styles.infoText}>{new Date(userData.dateOfBirth).toLocaleDateString()}</Text>
+            </View>
 
-          <Text style={styles.infoLabel}>Pozisyon:</Text>
-          <Text style={styles.infoText}>{userData.position}</Text>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>Eğitim:</Text>
+              <Text style={styles.infoText}>{userData.education}</Text>
+            </View>
 
-          <Text style={styles.infoLabel}>Deneyim:</Text>
-          <Text style={styles.infoText}>{userData.experience} yıl</Text>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>Deneyim:</Text>
+              <Text style={styles.infoText}>{userData.workExperience}</Text>
+            </View>
+
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>Yetenekler:</Text>
+              <Text style={styles.infoText}>{userData.skills}</Text>
+            </View>
+
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>Diller:</Text>
+              <Text style={styles.infoText}>{userData.languages}</Text>
+            </View>
+
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>Referanslar:</Text>
+              <Text style={styles.infoText}>{userData.references}</Text>
+            </View>
+
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>Portföy:</Text>
+              <Text style={[styles.infoText, { color: 'blue' }]}>{userData.portfolioLink}</Text>
+            </View>
+
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>Maaş Tercihi:</Text>
+              <Text style={styles.infoText}>{userData.desiredSalary}</Text>
+            </View>
+
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>Çalışma Tercihi:</Text>
+              <Text style={styles.infoText}>{userData.workTypePreference}</Text>
+            </View>
+          </View>
         </View>
 
         <TouchableOpacity style={styles.button} onPress={handleSearchJobs} disabled={searching}>
@@ -137,6 +188,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 10,
   },
+  row: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  infoBox: {
+    width: '48%',
+    marginBottom: 20,
+  },
   infoLabel: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -146,7 +206,7 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 16,
     color: '#555',
-    marginBottom: 15,
+    marginBottom: 5,
   },
   button: {
     backgroundColor: '#3182ce',
@@ -165,7 +225,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 20,
     elevation: 3,
-  }
+  },
 });
 
 export default JobSearchScreen;
