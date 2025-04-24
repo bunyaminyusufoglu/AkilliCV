@@ -20,7 +20,7 @@ const JobSearchScreen = () => {
           return;
         }
 
-        const response = await fetch(`http://192.168.1.105:5189/api/UserProfile/getProfile/${storedUserId}`);
+        const response = await fetch(`http://192.168.0.115:5189/api/UserProfile/getProfile/${storedUserId}`);
         const data = await response.json();
         setUserData(data);
       } catch (error) {
@@ -42,7 +42,7 @@ const JobSearchScreen = () => {
 
     setSearching(true);
     try {
-      const response = await fetch(`http://192.168.1.105:5189/api/JobSearch/getJobPostings/${userData.id}`);
+      const response = await fetch(`http://192.168.0.115:5189/api/JobSearch/getJobPostings/${userData.id}`);
       const result = await response.json();
       setJobResults(result.jobs || result);
     } catch (error) {

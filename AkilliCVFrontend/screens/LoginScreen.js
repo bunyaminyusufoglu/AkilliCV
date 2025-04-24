@@ -8,12 +8,12 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://192.168.1.105:5189/api/Auth/login', {
+      const response = await fetch('http://192.168.0.115:5189/api/Auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ email, password, name: '', surname: '' })
+        body: JSON.stringify({name: '', surname: '', email, password })
       });
   
       const data = await response.json();

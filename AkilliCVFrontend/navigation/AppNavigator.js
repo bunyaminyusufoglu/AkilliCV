@@ -28,12 +28,10 @@ export default function AppNavigator() {
   return (
     <Stack.Navigator screenOptions={{ header: () => <Header /> }}>
 
+      <Stack.Screen name="Giris Yap" component={LoginScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Profilim" component={MyProfileScreen} options={{ headerShown: false }} />
       <Stack.Screen name="AnaSayfa" component={TabNavigator} options={{ headerShown: false }} />
-      <Stack.Screen name="Giris Yap" component={LoginScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Kaydol" component={RegisterScreen} options={{ headerShown: false }} />
-
-      
       
     </Stack.Navigator>
   );

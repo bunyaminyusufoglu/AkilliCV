@@ -1,41 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View, Text, TextInput, Button, StyleSheet,
-  Alert, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView
-} from 'react-native';
+import { View, Text, Alert, ScrollView, KeyboardAvoidingView, Platform, Button, TextInput, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import Header from '../components/Header';
 import * as DocumentPicker from 'expo-document-picker';
+import Header from '../components/Header';
 
 const MyProfileScreen = () => {
-  const [profile, setProfile] = useState({
-    name: '',
-    surname: '',
-    email: '',
-    password: '',
-  });
-
+  const [profile, setProfile] = useState({ name: '', surname: '', email: '', password: '' });
   const [details, setDetails] = useState({
-    dateOfBirth: '',
-    phoneNumber: '',
-    education: '',
-    workExperience: '',
-    skills: '',
-    languages: '',
-    references: '',
-    portfolioLink: '',
-    desiredSalary: '',
-    workTypePreference: '',
+    dateOfBirth: '', phoneNumber: '', education: '', workExperience: '',
+    skills: '', languages: '', references: '', portfolioLink: '',
+    desiredSalary: '', workTypePreference: ''
   });
-
-  const [cvInfo, setCvInfo] = useState({
-    userId: '',
-    filePath: '',
-    fileName: '',
-    uploadDate: '',
-  });
-
+  const [cvInfo, setCvInfo] = useState({ userId: '', filePath: '', fileName: '', uploadDate: '' });
   const [editingBasic, setEditingBasic] = useState(false);
   const [editingDetails, setEditingDetails] = useState(false);
   const [editingCV, setEditingCV] = useState(false);
@@ -46,38 +23,40 @@ const MyProfileScreen = () => {
       try {
         const storedUserId = await AsyncStorage.getItem('userId');
         if (storedUserId) {
-          const response = await axios.get(`http://192.168.1.105:5189/api/Auth/profile/${storedUserId}`);
-          const data = response.data;
-          setProfile({
-            name: data.name,
-            surname: data.surname,
-            email: data.email,
-            password: data.password,
-          });
+          // Fetch basic profile info
+          const profileResponse = await axios.get(`http://192.168.0.115:5189/api/Auth/profile/${storedUserId}`);
+          const profileData = profileResponse.data;
+          setProfile({ name: profileData.name, surname: profileData.surname, email: profileData.email, password: profileData.password });
+
+          // Fetch detailed profile info
+          const detailsResponse = await axios.get(`http://192.168.0.115:5189/api/UserProfile/getProfile/${storedUserId}`);
+          const detailsData = detailsResponse.data;
           setDetails({
-            dateOfBirth: data.dateOfBirth || '',
-            phoneNumber: data.phoneNumber || '',
-            education: data.education || '',
-            workExperience: data.workExperience || '',
-            skills: data.skills || '',
-            languages: data.languages || '',
-            references: data.references || '',
-            portfolioLink: data.portfolioLink || '',
-            desiredSalary: data.desiredSalary || '',
-            workTypePreference: data.workTypePreference || '',
+            dateOfBirth: detailsData.dateOfBirth || '',
+            phoneNumber: detailsData.phoneNumber || '',
+            education: detailsData.education || '',
+            workExperience: detailsData.workExperience || '',
+            skills: detailsData.skills || '',
+            languages: detailsData.languages || '',
+            references: detailsData.references || '',
+            portfolioLink: detailsData.portfolioLink || '',
+            desiredSalary: detailsData.desiredSalary || '',
+            workTypePreference: detailsData.workTypePreference || ''
           });
+
+          // Fetch CV info
           setCvInfo({
             userId: storedUserId,
-            filePath: data.filePath || '',
-            fileName: data.fileName || '',
-            uploadDate: data.uploadDate || '',
+            filePath: detailsData.filePath || '',
+            fileName: detailsData.fileName || '',
+            uploadDate: detailsData.uploadDate || '',
           });
         } else {
-          Alert.alert('Hata', 'Kullanıcı ID bulunamadı.');
+          Alert.alert('Error', 'User ID not found');
         }
       } catch (error) {
-        console.error('Profil alınırken hata:', error);
-        Alert.alert('Hata', 'Profil bilgileri alınamadı.');
+        console.error('Error fetching profile:', error);
+        Alert.alert('Error', 'Could not fetch profile information');
       }
     };
 
@@ -87,14 +66,26 @@ const MyProfileScreen = () => {
   const handleUpdate = async () => {
     setLoading(true);
     try {
-      const payload = { ...profile, ...details };
-      await axios.put('http://192.168.1.105:5189/api/Auth/updateProfile', payload);
-      Alert.alert('Başarılı', 'Profiliniz güncellendi.');
+      const storedUserId = await AsyncStorage.getItem('userId');
+      const profilePayload = { userId: storedUserId, ...details };
+
+      // Check if profile exists, then update or create
+      const checkResponse = await axios.get(`http://192.168.0.115:5189/api/UserProfile/getProfile/${storedUserId}`);
+      const existingProfile = checkResponse.data;
+
+      if (existingProfile) {
+        await axios.put(`http://192.168.0.115:5189/api/UserProfile/updateProfile/${storedUserId}`, profilePayload);
+        Alert.alert('Success', 'Profile updated');
+      } else {
+        await axios.post('http://192.168.0.115:5189/api/UserProfile/createProfile', profilePayload);
+        Alert.alert('Success', 'Profile created');
+      }
+
       setEditingBasic(false);
       setEditingDetails(false);
     } catch (error) {
-      console.error('Güncelleme hatası:', error);
-      Alert.alert('Hata', 'Profil güncellenemedi.');
+      console.error('Update error:', error);
+      Alert.alert('Error', 'Profile could not be updated or created');
     } finally {
       setLoading(false);
     }
@@ -118,11 +109,11 @@ const MyProfileScreen = () => {
           type: 'application/pdf',
         });
 
-        await axios.post('http://192.168.1.105:5189/api/CV/upload', formData, {
+        await axios.post('http://192.168.0.115:5189/api/CV/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
 
-        Alert.alert('Başarılı', 'CV başarıyla güncellendi.');
+        Alert.alert('Success', 'CV uploaded successfully');
         setEditingCV(false);
         setCvInfo({
           ...cvInfo,
@@ -132,22 +123,29 @@ const MyProfileScreen = () => {
         });
       }
     } catch (error) {
-      console.error('PDF yükleme hatası:', error);
-      Alert.alert('Hata', 'CV güncellenemedi.');
+      console.error('CV upload error:', error);
+      Alert.alert('Error', 'Could not upload CV');
     }
   };
 
-  const renderInputOrText = (label, value, key, isEditing) => (
-    <View style={styles.inputItem} key={key}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      {isEditing ? (
+  const renderInputOrText = (label, value, key, editing, setState) => (
+    <View style={{ width: '48%', marginBottom: 15 }} key={key}>
+      <Text style={{ fontWeight: '500' }}>{label}</Text>
+      {editing ? (
         <TextInput
-          style={styles.infoInput}
+          style={{
+            borderWidth: 1,
+            borderRadius: 6,
+            padding: 10,
+            fontSize: 16,
+            borderColor: '#ddd',
+            marginTop: 5,
+          }}
           value={value}
-          onChangeText={(text) => setDetails({ ...details, [key]: text })}
+          onChangeText={(text) => setState({ ...details, [key]: text })}
         />
       ) : (
-        <Text style={styles.infoValue}>{value || '-'}</Text>
+        <Text style={{ fontSize: 16, marginTop: 5 }}>{value || '-'}</Text>
       )}
     </View>
   );
@@ -156,25 +154,27 @@ const MyProfileScreen = () => {
     <View style={{ flex: 1 }}>
       <Header />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.container}>
-          {/* Temel Bilgiler Kutusu */}
-          <View style={styles.box}>
-            <View style={styles.boxHeader}>
-              <Text style={styles.boxTitle}>Temel Bilgiler</Text>
+        <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 80, backgroundColor: '#f7f7f7' }}>
+          {/* Basic Info Section */}
+          <View style={{ backgroundColor: '#fff', padding: 16, borderRadius: 10, marginBottom: 20 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+              <Text style={{ fontSize: 18, fontWeight: '700' }}>Basic Info</Text>
               <TouchableOpacity onPress={() => setEditingBasic(!editingBasic)}>
-                <Text style={styles.editButton}>{editingBasic ? 'İptal' : 'Düzenle'}</Text>
+                <Text style={{ color: '#3182ce', fontWeight: '600' }}>
+                  {editingBasic ? 'Cancel' : 'Edit'}
+                </Text>
               </TouchableOpacity>
             </View>
-            <View style={styles.inputWrapper}>
-              {renderInputOrText('Ad', profile.name, 'name', editingBasic)}
-              {renderInputOrText('Soyad', profile.surname, 'surname', editingBasic)}
-              {renderInputOrText('E-posta', profile.email, 'email', editingBasic)}
-              {renderInputOrText('Şifre', '******', 'password', editingBasic)}
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+              {renderInputOrText('Name', profile.name, 'name', editingBasic, setProfile)}
+              {renderInputOrText('Surname', profile.surname, 'surname', editingBasic, setProfile)}
+              {renderInputOrText('Email', profile.email, 'email', editingBasic, setProfile)}
+              {renderInputOrText('Password', '******', 'password', false, () => {})}
             </View>
             {editingBasic && (
-              <View style={styles.buttonContainer}>
+              <View style={{ marginTop: 20 }}>
                 <Button
-                  title={loading ? 'Kaydediliyor...' : 'Kaydet'}
+                  title={loading ? 'Saving...' : 'Save'}
                   onPress={handleUpdate}
                   disabled={loading}
                   color="#3182ce"
@@ -183,30 +183,32 @@ const MyProfileScreen = () => {
             )}
           </View>
 
-          {/* Detaylı Bilgiler Kutusu */}
-          <View style={styles.box}>
-            <View style={styles.boxHeader}>
-              <Text style={styles.boxTitle}>Detaylı Bilgiler</Text>
+          {/* Detailed Info Section */}
+          <View style={{ backgroundColor: '#fff', padding: 16, borderRadius: 10, marginBottom: 20 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+              <Text style={{ fontSize: 18, fontWeight: '700' }}>Detailed Info</Text>
               <TouchableOpacity onPress={() => setEditingDetails(!editingDetails)}>
-                <Text style={styles.editButton}>{editingDetails ? 'İptal' : 'Düzenle'}</Text>
+                <Text style={{ color: '#3182ce', fontWeight: '600' }}>
+                  {editingDetails ? 'Cancel' : 'Edit'}
+                </Text>
               </TouchableOpacity>
             </View>
-            <View style={styles.inputWrapper}>
-              {renderInputOrText('Doğum Tarihi', details.dateOfBirth, 'dateOfBirth', editingDetails)}
-              {renderInputOrText('Telefon Numarası', details.phoneNumber, 'phoneNumber', editingDetails)}
-              {renderInputOrText('Eğitim', details.education, 'education', editingDetails)}
-              {renderInputOrText('İş Deneyimi', details.workExperience, 'workExperience', editingDetails)}
-              {renderInputOrText('Yetenekler', details.skills, 'skills', editingDetails)}
-              {renderInputOrText('Diller', details.languages, 'languages', editingDetails)}
-              {renderInputOrText('Referanslar', details.references, 'references', editingDetails)}
-              {renderInputOrText('Portföy Linki', details.portfolioLink, 'portfolioLink', editingDetails)}
-              {renderInputOrText('Beklenen Maaş', details.desiredSalary, 'desiredSalary', editingDetails)}
-              {renderInputOrText('Çalışma Tercihi', details.workTypePreference, 'workTypePreference', editingDetails)}
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+              {renderInputOrText('Date of Birth', details.dateOfBirth, 'dateOfBirth', editingDetails, setDetails)}
+              {renderInputOrText('Phone Number', details.phoneNumber, 'phoneNumber', editingDetails, setDetails)}
+              {renderInputOrText('Education', details.education, 'education', editingDetails, setDetails)}
+              {renderInputOrText('Work Experience', details.workExperience, 'workExperience', editingDetails, setDetails)}
+              {renderInputOrText('Skills', details.skills, 'skills', editingDetails, setDetails)}
+              {renderInputOrText('Languages', details.languages, 'languages', editingDetails, setDetails)}
+              {renderInputOrText('References', details.references, 'references', editingDetails, setDetails)}
+              {renderInputOrText('Portfolio Link', details.portfolioLink, 'portfolioLink', editingDetails, setDetails)}
+              {renderInputOrText('Desired Salary', details.desiredSalary, 'desiredSalary', editingDetails, setDetails)}
+              {renderInputOrText('Work Type Preference', details.workTypePreference, 'workTypePreference', editingDetails, setDetails)}
             </View>
             {editingDetails && (
-              <View style={styles.buttonContainer}>
+              <View style={{ marginTop: 20 }}>
                 <Button
-                  title={loading ? 'Kaydediliyor...' : 'Kaydet'}
+                  title={loading ? 'Saving...' : 'Save'}
                   onPress={handleUpdate}
                   disabled={loading}
                   color="#3182ce"
@@ -215,27 +217,33 @@ const MyProfileScreen = () => {
             )}
           </View>
 
-          {/* CV Bilgileri Kutusu */}
-          <View style={styles.box}>
-            <View style={styles.boxHeader}>
-              <Text style={styles.boxTitle}>CV Bilgileri</Text>
+          {/* CV Info Section */}
+          <View style={{ backgroundColor: '#fff', padding: 16, borderRadius: 10 }}>
+            <View style={{ marginBottom: 12 }}>
+              <Text style={{ fontSize: 18, fontWeight: '700' }}>CV Info</Text>
               <TouchableOpacity onPress={() => setEditingCV(!editingCV)}>
-                <Text style={styles.editButton}>{editingCV ? 'İptal' : 'Düzenle'}</Text>
+                <Text style={{ color: '#3182ce', fontWeight: '600' }}>
+                  {editingCV ? 'Cancel' : 'Edit'}
+                </Text>
               </TouchableOpacity>
             </View>
-            <Text style={styles.label}>CV Önizlemesi:</Text>
-            <Text style={styles.text}>{cvInfo.fileName ? `Ad: ${cvInfo.fileName}` : '-'}</Text>
-            <Text style={styles.label}>Yükleme Tarihi:</Text>
-            <Text style={styles.text}>{cvInfo.uploadDate || '-'}</Text>
-
+            {cvInfo.fileName ? (
+              <Text>CV File: {cvInfo.fileName}</Text>
+            ) : (
+              <Text>No CV Uploaded</Text>
+            )}
             {editingCV && (
-              <View style={styles.buttonContainer}>
-                <Button
-                  title="Yeni CV Yükle (PDF)"
-                  onPress={handleSelectPDF}
-                  color="#3182ce"
-                />
-              </View>
+              <TouchableOpacity onPress={handleSelectPDF} style={{ marginTop: 10 }}>
+                <Text style={{ color: '#3182ce' }}>Choose a CV File</Text>
+              </TouchableOpacity>
+            )}
+            {editingCV && cvInfo.filePath && (
+              <Button
+                title={loading ? 'Saving...' : 'Save CV'}
+                onPress={handleUpdate}
+                disabled={loading}
+                color="#3182ce"
+              />
             )}
           </View>
         </ScrollView>
@@ -243,74 +251,5 @@ const MyProfileScreen = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    paddingBottom: 80,
-    backgroundColor: '#f7f7f7',
-  },
-  box: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 10,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  boxHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  boxTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  editButton: {
-    color: '#3182ce',
-    fontWeight: '600',
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginVertical: 5,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-  inputItem: {
-    width: '48%',
-    marginBottom: 15,
-  },
-  infoLabel: {
-    fontWeight: '500',
-  },
-  infoInput: {
-    borderWidth: 1,
-    borderRadius: 6,
-    padding: 10,
-    fontSize: 16,
-    borderColor: '#ddd',
-    marginTop: 5,
-  },
-  infoValue: {
-    fontSize: 16,
-    marginTop: 5,
-  },
-  text: {
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  buttonContainer: {
-    marginTop: 20,
-  },
-});
 
 export default MyProfileScreen;

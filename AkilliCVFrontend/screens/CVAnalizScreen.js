@@ -10,7 +10,7 @@ const CVAnalizScreen = () => {
     try {
       setLoading(true);
 
-      const response = await fetch(`http://192.168.1.105:5189/api/CV/analyzeCV?userId=${userId}`, {
+      const response = await fetch(`http://192.168.0.115:5189/api/CV/analyzeCV?userId=${userId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

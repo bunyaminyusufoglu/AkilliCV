@@ -14,7 +14,7 @@ const HomeScreen = ({ navigation }) => {
         const userId = await AsyncStorage.getItem('userId');
 
         if (userId) {
-          const response = await axios.post('http://192.168.1.105:5189/api/CV/CheckUserCV', { userId: parseInt(userId) });
+          const response = await axios.post('http://192.168.0.115:5189/api/CV/CheckUserCV', { userId: parseInt(userId) });
           
           if (response.data === true) {
             setHasCV(true);
