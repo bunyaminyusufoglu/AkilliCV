@@ -9,7 +9,7 @@ const RegisterScreen = ({ navigation }) => {
 
   const handleRegister = async () => {
     try {
-      const response = await fetch('http://192.168.0.115:5189/api/Auth/register', {
+      const response = await fetch('http://localhost:5189/api/Auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

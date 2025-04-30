@@ -24,17 +24,41 @@ namespace AkilliCVBackend.Controllers
             if (existingUser != null)
                 return BadRequest(new { message = "Bu e-posta zaten kayıtlı." });
 
+            // Kullanıcıyı ekle
             _context.Users.Add(user);
+            await _context.SaveChangesAsync(); // ID burada oluşur
+
+            // UserProfile kaydı oluştur
+            var UserProfile = new UserProfile
+            {
+                UserId = user.Id,
+                DateOfBirth = null,
+                PhoneNumber = "",
+                Email = user.Email,
+                Education = "",
+                WorkExperience = "",
+                Skills = "",
+                Languages = "",
+                References = "",
+                PortfolioLink = "",
+                DesiredSalary = "",
+                WorkTypePreference = ""
+            };
+
+            _context.UserProfiles.Add(UserProfile);
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Kayıt başarılı." });
+
+
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] User user)
+        public async Task<IActionResult> Login([FromBody] LoginUser user)
         {
             var existingUser = await _context.Users
                 .FirstOrDefaultAsync(x => x.Email == user.Email && x.Password == user.Password);
+
 
             if (existingUser == null)
                 return Unauthorized(new { message = "Geçersiz e-posta veya şifre." });

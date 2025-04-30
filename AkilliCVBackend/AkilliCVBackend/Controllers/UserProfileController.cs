@@ -16,18 +16,6 @@ namespace AkilliCVBackend.Controllers
             _context = context;
         }
 
-        [HttpPost("createProfile")]
-        public IActionResult CreateProfile([FromBody] UserProfile userProfile)
-        {
-            if (userProfile == null)
-                return BadRequest("Profil bilgileri geçersiz.");
-
-            _context.UserProfiles.Add(userProfile);
-            _context.SaveChanges();
-
-            return Ok("Profil başarıyla oluşturuldu.");
-        }
-
         [HttpPut("updateProfile/{userId}")]
         public IActionResult UpdateProfile(int userId, [FromBody] UserProfile userProfile)
         {
