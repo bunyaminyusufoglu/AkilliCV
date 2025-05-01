@@ -1,7 +1,9 @@
-// /src/navigation/AppNavigator.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ActivityIndicator, View } from 'react-native';
+
 import HomeScreen from '../screens/HomeScreen';
 import JobSearchScreen from '../screens/JobSearchScreen';
 import CVAnalizScreen from '../screens/CVAnalizScreen';
@@ -25,14 +27,30 @@ function TabNavigator() {
 }
 
 export default function AppNavigator() {
-  return (
-    <Stack.Navigator screenOptions={{ header: () => <Header /> }}>
+  const [initialRoute, setInitialRoute] = useState(null);
 
-      <Stack.Screen name="AnaSayfa" component={TabNavigator} options={{ headerShown: false }} />
+  useEffect(() => {
+    const checkUser = async () => {
+      const userId = await AsyncStorage.getItem('userId');
+      setInitialRoute(userId ? 'AnaSayfa' : 'Giris Yap');
+    };
+    checkUser();
+  }, []);
+
+  if (!initialRoute) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#3182ce" />
+      </View>
+    );
+  }
+
+  return (
+    <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ header: () => <Header /> }}>
       <Stack.Screen name="Giris Yap" component={LoginScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="Profilim" component={MyProfileScreen} options={{ headerShown: false }} />  
+      <Stack.Screen name="Profilim" component={MyProfileScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Kaydol" component={RegisterScreen} options={{ headerShown: false }} />
-      
+      <Stack.Screen name="AnaSayfa" component={TabNavigator} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }

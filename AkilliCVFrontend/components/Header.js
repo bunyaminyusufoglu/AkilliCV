@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Pressable, Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const Header = () => {
   const [menuVisible, setMenuVisible] = useState(false);
@@ -12,12 +14,17 @@ const Header = () => {
     navigation.navigate('Profilim');
   };
 
-  const handleLogout = () => {
-    setMenuVisible(false);
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Giris Yap' }],
-    });
+  const handleLogout = async () => {
+    try {
+      setMenuVisible(false);
+      await AsyncStorage.removeItem('userId'); // Oturum bilgisini sil
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Giris Yap' }],
+      });
+    } catch (error) {
+      console.error('Çıkış yapılırken hata oluştu:', error);
+    }
   };
 
   const goToHome = () => {
