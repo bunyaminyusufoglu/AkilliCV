@@ -6,6 +6,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import Header from '../components/Header';
 
 const MyProfileScreen = () => {
+  const [selectedFile, setSelectedFile] = useState(null);
   const [profile, setProfile] = useState({ name: '', surname: '', email: '', password: '' });
   const [details, setDetails] = useState({
     dateOfBirth: '', phoneNumber: '', education: '', workExperience: '',
@@ -16,6 +17,7 @@ const MyProfileScreen = () => {
   const [editingBasic, setEditingBasic] = useState(false);
   const [editingDetails, setEditingDetails] = useState(false);
   const [editingCV, setEditingCV] = useState(false);
+  const [cvSelected, setCvSelected] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -25,8 +27,8 @@ const MyProfileScreen = () => {
         if (!storedUserId) return Alert.alert('Hata', 'Kullanıcı ID bulunamadı');
 
         console.log('Kayıtlı User ID:', storedUserId);
-        
 
+        // Kullanıcı bilgilerini al
         const userRes = await axios.get(`http://localhost:5189/api/Auth/profile/${storedUserId}`);
         const userData = userRes.data;
         setProfile({
@@ -36,6 +38,7 @@ const MyProfileScreen = () => {
           password: userData.password || ''
         });
 
+        // Kullanıcı detaylarını al
         const detailsRes = await axios.get(`http://localhost:5189/api/UserProfile/getProfile/${storedUserId}`);
         const detailsData = detailsRes.data;
         setDetails({
@@ -57,6 +60,19 @@ const MyProfileScreen = () => {
           fileName: detailsData.fileName || '',
           uploadDate: detailsData.uploadDate || '',
         });
+
+        // CV analysis verisini al
+        const cvAnalysisRes = await axios.get(`http://localhost:5189/api/CvAnalysis/view/${storedUserId}`);
+        const cvAnalysisData = cvAnalysisRes.data;
+
+        // Eğer fileName varsa, cvInfo'yu güncelle
+        if (cvAnalysisData && cvAnalysisData.fileName) {
+          setCvInfo((prevState) => ({
+            ...prevState,
+            fileName: cvAnalysisData.fileName
+          }));
+        }
+
       } catch (error) {
         console.error(error);
         Alert.alert('Hata', 'Profil verisi alınamadı');
@@ -90,8 +106,6 @@ const MyProfileScreen = () => {
     }
   };
 
-
-
   const handleSelectPDF = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -100,34 +114,57 @@ const MyProfileScreen = () => {
         multiple: false,
       });
 
+      console.log("Picker sonucu:", result);
+
       if (result.assets && result.assets.length > 0) {
         const file = result.assets[0];
-        const formData = new FormData();
-        formData.append('userId', cvInfo.userId);
-        formData.append('file', {
-          uri: Platform.OS === 'ios' ? file.uri.replace('file://', '') : file.uri,
-          name: file.name,
-          type: 'application/pdf',
-        });
+        setSelectedFile(file);
+        setCvSelected(true); 
+        setCvInfo(prev => ({
+          ...prev,
+          filePath: file.uri,
+          fileName: file.name
+        }));
+      }
+    } catch (error) {
+      console.error('PDF seçme hatası:', error);
+    }
+  };
 
-        await axios.post('http://192.168.0.115:5189/api/CV/upload', formData, {
+  const handleSaveCV = async () => {
+    setLoading(true);  // Yükleme işlemini başlatıyoruz
+    try {
+      const formData = new FormData();
+  
+      // Eğer dosya seçildiğinde dosya path'i doğru alındıysa, formData'ya dosyayı ekleyelim
+      if (selectedFile) {
+        formData.append('userId', cvInfo.userId);  // Kullanıcı ID'sini ekliyoruz
+        formData.append('file', {
+          uri: selectedFile.uri,  // Dosya URI'si
+          name: selectedFile.name,  // Dosya adı
+          type: selectedFile.mimeType || 'application/pdf',  // Dosya türü
+        });
+  
+        // API'ye dosya yükleme isteği gönderiyoruz
+        const response = await axios.post('http://localhost:5189/api/CvAnalysis/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
-
-        Alert.alert('Başarılı', 'CV başarıyla yüklendi');
-        setEditingCV(false);
-        setCvInfo({
-          ...cvInfo,
-          filePath: file.uri,
-          fileName: file.name,
-          uploadDate: new Date().toISOString().slice(0, 10),
-        });
+  
+        if (response.status === 200) {
+          Alert.alert('Başarılı', 'CV başarıyla yüklendi');
+          setEditingCV(false);  // Düzenleme modunu kapatıyoruz
+        }
+      } else {
+        Alert.alert('Hata', 'Lütfen bir CV dosyası seçin.');
       }
     } catch (error) {
       console.error('CV yükleme hatası:', error);
       Alert.alert('Hata', 'CV yüklenemedi');
+    } finally {
+      setLoading(false);  // Yükleme işlemi tamamlandı
     }
   };
+  
 
   const renderInputOrText = (label, value, key, editing, setState) => (
     <View style={{ width: '48%', marginBottom: 15 }} key={key}>
@@ -143,7 +180,7 @@ const MyProfileScreen = () => {
             marginTop: 5,
           }}
           value={value}
-          onChangeText={(text) => setState(prev => ({ ...prev, [key]: text }))}
+          onChangeText={(text) => setState(prev => ({ ...prev, [key]: text }))} 
         />
       ) : (
         <Text style={{ fontSize: 16, marginTop: 5 }}>{value || '-'}</Text>
@@ -209,35 +246,53 @@ const MyProfileScreen = () => {
           </View>
 
           {/* CV Bilgileri */}
-          <View style={{ backgroundColor: '#fff', padding: 16, borderRadius: 10 }}>
-            <View style={{ marginBottom: 12 }}>
-              <Text style={{ fontSize: 18, fontWeight: '700' }}>CV Bilgileri</Text>
+          <View style={{
+            backgroundColor: '#ffffff',
+            padding: 20,
+            borderRadius: 12,
+            marginVertical: 20,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 4,
+          }}>
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 16,
+            }}>
+              <Text style={{
+                fontSize: 20,
+                fontWeight: 'bold',
+                color: '#333',
+              }}>
+                CV Bilgileri
+              </Text>
               <TouchableOpacity onPress={() => setEditingCV(!editingCV)}>
-                <Text style={{ color: '#3182ce', fontWeight: '600' }}>
+                <Text style={{
+                  fontSize: 16,
+                  color: '#3182ce',
+                  fontWeight: '600',
+                }}>
                   {editingCV ? 'İptal' : 'Düzenle'}
                 </Text>
               </TouchableOpacity>
             </View>
-            {cvInfo.fileName ? (
-              <Text>CV Dosyası: {cvInfo.fileName}</Text>
-            ) : (
-              <Text>CV yüklenmedi</Text>
-            )}
+
+            <Text style={{ fontSize: 16, marginBottom: 8 }}>
+              {cvInfo.fileName || 'CV yüklenmedi'}
+            </Text>
+
             {editingCV && (
-              <>
-                <TouchableOpacity onPress={handleSelectPDF} style={{ marginTop: 10 }}>
-                  <Text style={{ color: '#3182ce' }}>CV Dosyası Seç</Text>
-                </TouchableOpacity>
-                {cvInfo.filePath && (
-                  <Button
-                    title={loading ? 'Kaydediliyor...' : 'CV\'yi Kaydet'}
-                    onPress={handleUpdate}
-                    disabled={loading}
-                    color="#3182ce"
-                    style={{ marginTop: 10 }}
-                  />
+              <View style={{ marginTop: 20 }}>
+                {cvSelected ? (
+                  <Button title="Kaydet" onPress={handleSaveCV} color="#3182ce" />
+                ) : (
+                  <Button title="CV Yükle" onPress={handleSelectPDF} color="#3182ce" />
                 )}
-              </>
+              </View>
             )}
           </View>
         </ScrollView>

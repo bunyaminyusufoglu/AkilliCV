@@ -1,39 +1,48 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
-using System.Text.Json;
+using System.IO;
+using Microsoft.Extensions.Configuration;
 
 namespace AkilliCVBackend.Services
 {
     public class AIService
     {
         private readonly HttpClient _httpClient;
-        private readonly string _apiKey = "YOUR_API_KEY"; // DeepAI API anahtarınızı buraya ekleyin
+        private readonly string _apiKey;
 
-        public AIService(HttpClient httpClient)
+        public AIService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
+            _apiKey = configuration["Gemini:ApiKey"]; // API key'inizi appsettings.json veya env'den alın
         }
 
-        // CV analizini yapan metod
-        public async Task<string> AnalyzeCVAsync(string filePath)
+        public async Task<string> AnalyzeCVAsync(string filePath, string analysisText)
         {
-            var content = new MultipartFormDataContent();
-            content.Add(new StringContent(filePath), "file");
+            if (!File.Exists(filePath))
+                return "CV dosyası bulunamadı.";
 
-            // API anahtarını başlıklara ekleyin
-            _httpClient.DefaultRequestHeaders.Add("api-key", _apiKey);
+            using var fileStream = File.OpenRead(filePath);
+            var content = new MultipartFormDataContent
+            {
+                { new StreamContent(fileStream), "file", Path.GetFileName(filePath) },
+                { new StringContent(analysisText), "text" } // Metni de ekliyoruz
+            };
 
-            // API'ye POST isteği gönderin
-            var response = await _httpClient.PostAsync("https://api.deepai.org/api/resume-analyzer", content);
+            // Header'a API key ekleniyor (önceden varsa ekleme)
+            if (!_httpClient.DefaultRequestHeaders.Contains("Authorization"))
+            {
+                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
+            }
+
+            var response = await _httpClient.PostAsync("https://api.gemini.com/v1/cv-analyze", content);
 
             if (!response.IsSuccessStatusCode)
             {
-                return "CV analizi başarısız oldu.";
+                return $"CV analizi başarısız oldu. Hata: {response.ReasonPhrase}";
             }
 
-            // API'den gelen yanıtı JSON formatında çözümleyin
             var responseData = await response.Content.ReadAsStringAsync();
-            return responseData; // JSON formatında analiz sonucu dönecek
+            return responseData;
         }
     }
 }

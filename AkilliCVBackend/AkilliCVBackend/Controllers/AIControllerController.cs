@@ -23,7 +23,7 @@ namespace AkilliCVBackend.Controllers
         }
 
         [HttpPost("users/{userId}/analyze-cv")]
-        public async Task<IActionResult> AnalyzeCV(int userId)
+        public async Task<IActionResult> AnalyzeCV(int userId, [FromBody] string analysisText)
         {
             try
             {
@@ -36,7 +36,9 @@ namespace AkilliCVBackend.Controllers
                 }
 
                 string filePath = cv.FilePath;
-                var analysisResult = await _aiService.AnalyzeCVAsync(filePath);
+
+                // CV dosyasını ve metni analiz için gönderiyoruz
+                var analysisResult = await _aiService.AnalyzeCVAsync(filePath, analysisText);
 
                 if (string.IsNullOrEmpty(analysisResult))
                 {

@@ -20,7 +20,7 @@ const JobSearchScreen = () => {
           return;
         }
 
-        const response = await fetch(`http://192.168.0.115:5189/api/UserProfile/getProfile/${storedUserId}`);
+        const response = await fetch(`http://localhost:5189/api/UserProfile/getProfile/${storedUserId}`);
         const data = await response.json();
         setUserData(data);
       } catch (error) {
