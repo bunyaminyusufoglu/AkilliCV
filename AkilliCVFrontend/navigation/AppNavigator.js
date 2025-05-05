@@ -22,6 +22,7 @@ function TabNavigator() {
       <Tab.Screen name="Ana Sayfa" component={HomeScreen} options={{ headerShown: false }} />
       <Tab.Screen name="İş İlanları" component={JobSearchScreen} options={{ headerShown: false }} />
       <Tab.Screen name="CV Analiz" component={CVAnalizScreen} options={{ headerShown: false }} />
+      
     </Tab.Navigator>
   );
 }
