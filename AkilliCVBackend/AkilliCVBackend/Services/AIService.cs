@@ -1,7 +1,9 @@
 ﻿using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
-using System.IO;
 using Microsoft.Extensions.Configuration;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace AkilliCVBackend.Services
 {
@@ -13,7 +15,7 @@ namespace AkilliCVBackend.Services
         public AIService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _apiKey = configuration["Gemini:ApiKey"]; // API key'inizi appsettings.json veya env'den alın
+            _apiKey = configuration["Gemini:ApiKey"];
         }
 
         public async Task<string> AnalyzeCVAsync(string filePath, string analysisText)
@@ -21,28 +23,38 @@ namespace AkilliCVBackend.Services
             if (!File.Exists(filePath))
                 return "CV dosyası bulunamadı.";
 
-            using var fileStream = File.OpenRead(filePath);
-            var content = new MultipartFormDataContent
+            var promptText = analysisText;
+
+            // Gemini API endpoint
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={_apiKey}";
+
+            // JSON payload
+            var payload = new
             {
-                { new StreamContent(fileStream), "file", Path.GetFileName(filePath) },
-                { new StringContent(analysisText), "text" } // Metni de ekliyoruz
+                contents = new[]
+                {
+                    new
+                    {
+                        parts = new[]
+                        {
+                            new { text = promptText }
+                        }
+                    }
+                }
             };
 
-            // Header'a API key ekleniyor (önceden varsa ekleme)
-            if (!_httpClient.DefaultRequestHeaders.Contains("Authorization"))
-            {
-                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
-            }
+            var jsonPayload = JsonConvert.SerializeObject(payload);
+            var httpContent = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync("https://api.gemini.com/v1/cv-analyze", content);
+            var response = await _httpClient.PostAsync(url, httpContent);
 
             if (!response.IsSuccessStatusCode)
             {
-                return $"CV analizi başarısız oldu. Hata: {response.ReasonPhrase}";
+                return $"Gemini API hatası: {response.StatusCode} - {response.ReasonPhrase}";
             }
 
-            var responseData = await response.Content.ReadAsStringAsync();
-            return responseData;
+            var responseString = await response.Content.ReadAsStringAsync();
+            return responseString;
         }
     }
 }

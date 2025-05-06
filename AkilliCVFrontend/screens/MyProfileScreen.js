@@ -4,6 +4,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import * as DocumentPicker from 'expo-document-picker';
 import Header from '../components/Header';
+import MyProfile from '../components/MyProfile';
+import MyDetayProfile from '../components/MyDetayProfile'
+import MyCV from '../components/MyCV'
 
 const MyProfileScreen = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -138,7 +141,7 @@ const MyProfileScreen = () => {
   
       // Eğer dosya seçildiğinde dosya path'i doğru alındıysa, formData'ya dosyayı ekleyelim
       if (selectedFile) {
-        formData.append('userId', cvInfo.userId);  // Kullanıcı ID'sini ekliyoruz
+        formData.append('userId', string(cvInfo.userId));  // Kullanıcı ID'sini ekliyoruz
         formData.append('file', {
           uri: selectedFile.uri,  // Dosya URI'si
           name: selectedFile.name,  // Dosya adı
@@ -193,110 +196,13 @@ const MyProfileScreen = () => {
       <Header />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 80, backgroundColor: '#f7f7f7' }}>
-          {/* Temel Bilgiler */}
-          <View style={{ backgroundColor: '#fff', padding: 16, borderRadius: 10, marginBottom: 20 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
-              <Text style={{ fontSize: 18, fontWeight: '700' }}>Temel Bilgiler</Text>
-              <TouchableOpacity onPress={() => setEditingBasic(!editingBasic)}>
-                <Text style={{ color: '#3182ce', fontWeight: '600' }}>
-                  {editingBasic ? 'İptal' : 'Düzenle'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-              {renderInputOrText('Ad', profile.name, 'name', editingBasic, setProfile)}
-              {renderInputOrText('Soyad', profile.surname, 'surname', editingBasic, setProfile)}
-              {renderInputOrText('E-posta', profile.email, 'email', editingBasic, setProfile)}
-              {renderInputOrText('Şifre', '******', 'password', false, () => {})}
-            </View>
-          </View>
-
-          {/* Detaylı Bilgi */}
-          <View style={{ backgroundColor: '#fff', padding: 16, borderRadius: 10, marginBottom: 20 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
-              <Text style={{ fontSize: 18, fontWeight: '700' }}>Detaylı Bilgi</Text>
-              <TouchableOpacity onPress={() => setEditingDetails(!editingDetails)}>
-                <Text style={{ color: '#3182ce', fontWeight: '600' }}>
-                  {editingDetails ? 'İptal' : 'Düzenle'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-              {renderInputOrText('Doğum Tarihi', details.dateOfBirth, 'dateOfBirth', editingDetails, setDetails)}
-              {renderInputOrText('Telefon Numarası', details.phoneNumber, 'phoneNumber', editingDetails, setDetails)}
-              {renderInputOrText('Eğitim', details.education, 'education', editingDetails, setDetails)}
-              {renderInputOrText('İş Deneyimi', details.workExperience, 'workExperience', editingDetails, setDetails)}
-              {renderInputOrText('Yetenekler', details.skills, 'skills', editingDetails, setDetails)}
-              {renderInputOrText('Diller', details.languages, 'languages', editingDetails, setDetails)}
-              {renderInputOrText('Referanslar', details.references, 'references', editingDetails, setDetails)}
-              {renderInputOrText('Portfolyo Linki', details.portfolioLink, 'portfolioLink', editingDetails, setDetails)}
-              {renderInputOrText('Talep Edilen Maaş', details.desiredSalary, 'desiredSalary', editingDetails, setDetails)}
-              {renderInputOrText('Çalışma Tercihi', details.workTypePreference, 'workTypePreference', editingDetails, setDetails)}
-            </View>
-            {editingDetails && (
-              <View style={{ marginTop: 20 }}>
-                <Button
-                  title={loading ? 'Kaydediliyor...' : 'Kaydet'}
-                  onPress={handleUpdate}
-                  disabled={loading}
-                  color="#3182ce"
-                />
-              </View>
-            )}
-          </View>
-
-          {/* CV Bilgileri */}
-          <View style={{
-            backgroundColor: '#ffffff',
-            padding: 20,
-            borderRadius: 12,
-            marginVertical: 20,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            elevation: 4,
-          }}>
-            <View style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 16,
-            }}>
-              <Text style={{
-                fontSize: 20,
-                fontWeight: 'bold',
-                color: '#333',
-              }}>
-                CV Bilgileri
-              </Text>
-              <TouchableOpacity onPress={() => setEditingCV(!editingCV)}>
-                <Text style={{
-                  fontSize: 16,
-                  color: '#3182ce',
-                  fontWeight: '600',
-                }}>
-                  {editingCV ? 'İptal' : 'Düzenle'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <Text style={{ fontSize: 16, marginBottom: 8 }}>
-              {cvInfo.fileName || 'CV yüklenmedi'}
-            </Text>
-
-            {editingCV && (
-              <View style={{ marginTop: 20 }}>
-                {cvSelected ? (
-                  <Button title="Kaydet" onPress={handleSaveCV} color="#3182ce" />
-                ) : (
-                  <Button title="CV Yükle" onPress={handleSelectPDF} color="#3182ce" />
-                )}
-              </View>
-            )}
-          </View>
+          <MyProfile />
+          <MyDetayProfile />
+          <MyCV />
         </ScrollView>
       </KeyboardAvoidingView>
+
+      
     </View>
   );
 };

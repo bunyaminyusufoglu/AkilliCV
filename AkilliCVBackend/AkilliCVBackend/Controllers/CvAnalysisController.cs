@@ -80,24 +80,5 @@ namespace AkilliCVBackend.Controllers
                 cv.UploadDate
             });
         }
-
-        [HttpDelete("delete/{userId}")]
-        public async Task<IActionResult> DeleteCV(int userId)
-        {
-            var cv = await _context.CVs.FirstOrDefaultAsync(x => x.UserId == userId);
-
-            if (cv == null)
-                return NotFound(new { message = "Silinecek CV bulunamadı." });
-
-            if (System.IO.File.Exists(cv.FilePath))
-            {
-                System.IO.File.Delete(cv.FilePath);
-            }
-
-            _context.CVs.Remove(cv);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "CV başarıyla silindi." });
-        }
     }
 }
