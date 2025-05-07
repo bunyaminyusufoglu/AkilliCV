@@ -1,43 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../components/Header';
 
-
 const HomeScreen = ({ navigation }) => {
-  const [hasCV, setHasCV] = useState(false);
-  const [isProfileComplete, setIsProfileComplete] = useState(false);
-
-  useEffect(() => {
-    const checkCVAndProfile = async () => {
-      try {
-        const userId = await AsyncStorage.getItem('userId');
-
-        if (userId) {
-          const response = await axios.post('http://192.168.0.115:5189/api/CV/CheckUserCV', { userId: parseInt(userId) });
-          
-          if (response.data === true) {
-            setHasCV(true);
-          }
-        }
-
-        const profileData = await AsyncStorage.getItem('userProfile');
-        if (profileData) {
-          setIsProfileComplete(true);
-        }
-
-      } catch (error) {
-        console.error('CV kontrolü sırasında hata:', error);
-      }
-    };
-
-    checkCVAndProfile();
-  }, []);
-
-  const handleCVUpload = () => {
-    navigation.navigate('Profilim');
-  };
-
   const handleCVUpdate = () => {
     navigation.navigate('Profilim');
   };
@@ -51,68 +16,53 @@ const HomeScreen = ({ navigation }) => {
   };
 
   return (
-
     <View style={{ flex: 1 }}>
       <Header />
-    
-    <View style={styles.container}>
-      <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>75+</Text>
-          <Text style={styles.statTitle}>Üye</Text>
+      <View style={styles.container}>
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>75+</Text>
+            <Text style={styles.statTitle}>Üye</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>100+</Text>
+            <Text style={styles.statTitle}>Başarılı CV Analizi</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>25+</Text>
+            <Text style={styles.statTitle}>İş Bulma</Text>
+          </View>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>100+</Text>
-          <Text style={styles.statTitle}>Başarılı CV Analizi</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>25+</Text>
-          <Text style={styles.statTitle}>İş Bulma</Text>
-        </View>
-      </View>
 
-      <View style={styles.rowContainer}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>CV Durumu</Text>
-          {!hasCV ? (
-            <View style={styles.alertBox}>
-              <Text style={styles.alertText}>CV'nizin güncel olduğundan emin olun.</Text>
-              <TouchableOpacity onPress={handleCVUpload} style={styles.button}>
-                <Text style={styles.buttonText}>CV Yükle</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
+        <View style={styles.rowContainer}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>CV Durumu</Text>
             <View style={styles.alertBox}>
               <Text style={styles.alertText}>CV'nizi güncelleyebilirsiniz.</Text>
               <TouchableOpacity onPress={handleCVUpdate} style={styles.button}>
                 <Text style={styles.buttonText}>CV'yi Güncelle</Text>
               </TouchableOpacity>
             </View>
-          )}
-        </View>
+          </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Profil Durumu</Text>
-          {!isProfileComplete ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Profil Durumu</Text>
             <View style={styles.alertBox}>
-              <Text style={styles.alertText}>Profilinizin güncel olduğundan emin olun.</Text>
+              <Text style={styles.alertText}>Profilinizi düzenleyebilirsiniz.</Text>
               <TouchableOpacity onPress={handleProfileEdit} style={styles.button}>
                 <Text style={styles.buttonText}>Profil Düzenle</Text>
               </TouchableOpacity>
             </View>
-          ) : (
-            <Text style={styles.alertText}>Profiliniz tam olarak doldurulmuş.</Text>
-          )}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>İş Bulma</Text>
+          <TouchableOpacity onPress={handleJobSearch} style={styles.button}>
+            <Text style={styles.buttonText}>İş Arama</Text>
+          </TouchableOpacity>
         </View>
       </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>İş Bulma</Text>
-        <TouchableOpacity onPress={handleJobSearch} style={styles.button}>
-          <Text style={styles.buttonText}>İş Arama</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
     </View>
   );
 };
@@ -123,7 +73,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f4f8',
     paddingHorizontal: 20,
     paddingTop: 20,
-    
   },
   statsContainer: {
     flexDirection: 'row',

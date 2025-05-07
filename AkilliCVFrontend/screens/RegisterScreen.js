@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, Image } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_ENDPOINTS } from '../config/api';
 
 const RegisterScreen = ({ navigation }) => {
   const [name, setName] = useState('');
@@ -9,10 +11,10 @@ const RegisterScreen = ({ navigation }) => {
 
   const handleRegister = async () => {
     try {
-      const response = await fetch('http://localhost:5189/api/Auth/register', {
+      const response = await fetch(API_ENDPOINTS.AUTH.REGISTER, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           name,
@@ -21,19 +23,19 @@ const RegisterScreen = ({ navigation }) => {
           password
         })
       });
-  
+
       const data = await response.json();
-      console.log('Register yanıtı:', data);
-  
+
       if (response.ok) {
-        Alert.alert('Kayıt başarılı!', data.message || 'Hesabınız başarıyla oluşturuldu.');
-        navigation.navigate('Giris Yap');
+        await AsyncStorage.setItem('userId', data.userId);
+        await AsyncStorage.setItem('token', data.token);
+        navigation.replace('Ana Sayfa');
       } else {
-        Alert.alert('Hata', data.message || 'Kayıt sırasında bir hata oluştu.');
+        Alert.alert('Hata', data.message || 'Kayıt başarısız');
       }
     } catch (error) {
-      Alert.alert('Hata', 'Sunucuya bağlanırken hata oluştu.');
-      console.error(error);
+      console.error('Register error:', error);
+      Alert.alert('Hata', 'Kayıt başarısız. Lütfen bilgilerinizi kontrol edin.');
     }
   };
   

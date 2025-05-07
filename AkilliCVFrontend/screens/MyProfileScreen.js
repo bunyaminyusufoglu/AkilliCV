@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Alert, ScrollView, KeyboardAvoidingView, Platform, Button, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, Alert, ScrollView, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import * as DocumentPicker from 'expo-document-picker';
@@ -7,6 +7,7 @@ import Header from '../components/Header';
 import MyProfile from '../components/MyProfile';
 import MyDetayProfile from '../components/MyDetayProfile'
 import MyCV from '../components/MyCV'
+import { API_ENDPOINTS } from '../config/api';
 
 const MyProfileScreen = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -32,7 +33,7 @@ const MyProfileScreen = () => {
         console.log('Kayıtlı User ID:', storedUserId);
 
         // Kullanıcı bilgilerini al
-        const userRes = await axios.get(`http://localhost:5189/api/Auth/profile/${storedUserId}`);
+        const userRes = await axios.get(`${API_ENDPOINTS.AUTH.PROFILE}/${storedUserId}`);
         const userData = userRes.data;
         setProfile({
           name: userData.name || '',
@@ -42,7 +43,7 @@ const MyProfileScreen = () => {
         });
 
         // Kullanıcı detaylarını al
-        const detailsRes = await axios.get(`http://localhost:5189/api/UserProfile/getProfile/${storedUserId}`);
+        const detailsRes = await axios.get(`${API_ENDPOINTS.USER_PROFILE.GET_PROFILE}/${storedUserId}`);
         const detailsData = detailsRes.data;
         setDetails({
           dateOfBirth: detailsData.dateOfBirth || '',
@@ -65,7 +66,7 @@ const MyProfileScreen = () => {
         });
 
         // CV analysis verisini al
-        const cvAnalysisRes = await axios.get(`http://localhost:5189/api/CvAnalysis/view/${storedUserId}`);
+        const cvAnalysisRes = await axios.get(`${API_ENDPOINTS.CV_ANALYSIS.VIEW}/${storedUserId}`);
         const cvAnalysisData = cvAnalysisRes.data;
 
         // Eğer fileName varsa, cvInfo'yu güncelle
@@ -91,12 +92,12 @@ const MyProfileScreen = () => {
       const storedUserId = await AsyncStorage.getItem('userId');
       const profilePayload = { userId: storedUserId, ...details };
 
-      const check = await axios.get(`http://localhost:5189/api/UserProfile/getProfile/${storedUserId}`);
+      const check = await axios.get(`${API_ENDPOINTS.USER_PROFILE.GET_PROFILE}/${storedUserId}`);
       if (check.data) {
-        await axios.put(`http://localhost:5189/api/UserProfile/updateProfile/${storedUserId}`, profilePayload);
+        await axios.put(`${API_ENDPOINTS.USER_PROFILE.UPDATE_PROFILE}/${storedUserId}`, profilePayload);
         Alert.alert('Başarılı', 'Profil güncellendi');
       } else {
-        await axios.post(`http://localhost:5189/api/UserProfile/createProfile`, profilePayload);
+        await axios.post(API_ENDPOINTS.USER_PROFILE.CREATE_PROFILE, profilePayload);
         Alert.alert('Başarılı', 'Profil oluşturuldu');
       }
 
@@ -135,27 +136,25 @@ const MyProfileScreen = () => {
   };
 
   const handleSaveCV = async () => {
-    setLoading(true);  // Yükleme işlemini başlatıyoruz
+    setLoading(true);
     try {
       const formData = new FormData();
   
-      // Eğer dosya seçildiğinde dosya path'i doğru alındıysa, formData'ya dosyayı ekleyelim
       if (selectedFile) {
-        formData.append('userId', string(cvInfo.userId));  // Kullanıcı ID'sini ekliyoruz
+        formData.append('userId', string(cvInfo.userId));
         formData.append('file', {
-          uri: selectedFile.uri,  // Dosya URI'si
-          name: selectedFile.name,  // Dosya adı
-          type: selectedFile.mimeType || 'application/pdf',  // Dosya türü
+          uri: selectedFile.uri,
+          name: selectedFile.name,
+          type: selectedFile.mimeType || 'application/pdf',
         });
   
-        // API'ye dosya yükleme isteği gönderiyoruz
-        const response = await axios.post('http://localhost:5189/api/CvAnalysis/upload', formData, {
+        const response = await axios.post(API_ENDPOINTS.CV_ANALYSIS.UPLOAD, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
   
         if (response.status === 200) {
           Alert.alert('Başarılı', 'CV başarıyla yüklendi');
-          setEditingCV(false);  // Düzenleme modunu kapatıyoruz
+          setEditingCV(false);
         }
       } else {
         Alert.alert('Hata', 'Lütfen bir CV dosyası seçin.');
@@ -164,7 +163,7 @@ const MyProfileScreen = () => {
       console.error('CV yükleme hatası:', error);
       Alert.alert('Hata', 'CV yüklenemedi');
     } finally {
-      setLoading(false);  // Yükleme işlemi tamamlandı
+      setLoading(false);
     }
   };
   
@@ -192,19 +191,34 @@ const MyProfileScreen = () => {
   );
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <Header />
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 80, backgroundColor: '#f7f7f7' }}>
-          <MyProfile />
-          <MyDetayProfile />
-          <MyCV />
-        </ScrollView>
-      </KeyboardAvoidingView>
-
-      
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+        bounces={true}
+      >
+        <MyProfile />
+        <MyDetayProfile />
+        <MyCV />
+      </ScrollView>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f7f7f7',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 100,
+  }
+});
 
 export default MyProfileScreen;

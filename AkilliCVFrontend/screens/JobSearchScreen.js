@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import Header from '../components/Header';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_ENDPOINTS } from '../config/api';
 
 const JobSearchScreen = () => {
   const [userId, setUserId] = useState(null);
@@ -20,7 +21,7 @@ const JobSearchScreen = () => {
           return;
         }
 
-        const response = await fetch(`http://localhost:5189/api/UserProfile/getProfile/${storedUserId}`);
+        const response = await fetch(`${API_ENDPOINTS.USER_PROFILE.GET_PROFILE}/${storedUserId}`);
         const data = await response.json();
         setUserData(data);
       } catch (error) {
@@ -42,7 +43,7 @@ const JobSearchScreen = () => {
 
     setSearching(true);
     try {
-      const response = await fetch(`http://192.168.0.115:5189/api/JobSearch/getJobPostings/${userData.id}`);
+      const response = await fetch(`${API_ENDPOINTS.JOBS.LIST}/${userData.id}`);
       const result = await response.json();
       setJobResults(result.jobs || result);
     } catch (error) {

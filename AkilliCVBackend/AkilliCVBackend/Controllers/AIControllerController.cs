@@ -38,7 +38,7 @@ namespace AkilliCVBackend.Controllers
                 string filePath = cv.FilePath;
 
                 // Sabit analiz metni
-                string analysisText = "Sana Gönderdiğim pdf teki CV'yi 7 maddede değerlendir ve bana sadece sade bir şekilde 1,2,3,4,5,6 ve 7 satırda 7 madde ile eksikliklerinin ve tavsiyelerini aktar. Bana cevap verir gibi konuşma sadece bana döneceğin cevap 7 maddeli değerlendirme olsun onun dışında gereksiz tek mesaj atma.";
+                string analysisText = "Sana Gönderdiğim pdf teki CV'yi 7 maddede değerlendir ve bana sadece sade bir şekilde 1,2,3,4,5,6 ve 7-12 satırda 7-12 madde ile eksikliklerinin ve tavsiyelerini aktar. Bana cevap verir gibi konuşma sadece bana döneceğin cevap 7-12 maddeli değerlendirme olsun onun dışında gereksiz tek mesaj atma.";
 
                 var analysisResult = await _aiService.AnalyzeCVAsync(filePath, analysisText);
 
