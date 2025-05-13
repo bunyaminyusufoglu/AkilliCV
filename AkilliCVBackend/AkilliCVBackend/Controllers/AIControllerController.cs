@@ -2,8 +2,6 @@
 using AkilliCVBackend.Services;
 using AkilliCVBackend.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 
 namespace AkilliCVBackend.Controllers
 {

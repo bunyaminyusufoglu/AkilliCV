@@ -131,7 +131,7 @@ const MyCV = () => {
   
 
   return (
-    <View style={{ padding: 20 }}>
+    <View style={{ padding: 16 }}>
       {/* CV Bilgileri */}
       <View
         style={{

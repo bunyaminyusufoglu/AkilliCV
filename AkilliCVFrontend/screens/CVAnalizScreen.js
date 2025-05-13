@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   scrollBox: {
-    maxHeight: 200,
+    maxHeight: 500,
   },
   sectionTitle: {
     fontSize: 18,

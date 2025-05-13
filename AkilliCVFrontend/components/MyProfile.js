@@ -89,8 +89,8 @@ const MyProfile = () => {
   return (
     <ScrollView contentContainerStyle={{ padding: 16 }}>
       {/* Temel Bilgiler */}
-      <View style={{ backgroundColor: '#fff', padding: 16, borderRadius: 10, marginBottom: 20 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+      <View style={{ backgroundColor: '#fff', padding: 16, borderRadius: 10, marginBottom: 10 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
           <Text style={{ fontSize: 18, fontWeight: '700' }}>Temel Bilgiler</Text>
           <TouchableOpacity onPress={() => setEditingBasic(!editingBasic)}>
             <Text style={{ color: '#3182ce', fontWeight: '600' }}>

@@ -43,11 +43,11 @@ const HomeScreen = ({ navigation }) => {
             <Text style={styles.statTitle}>Üye</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>100+</Text>
+            <Text style={styles.statNumber}>46+</Text>
             <Text style={styles.statTitle}>Başarılı CV Analizi</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>25+</Text>
+            <Text style={styles.statNumber}>18+</Text>
             <Text style={styles.statTitle}>İş Bulma</Text>
           </View>
         </View>
