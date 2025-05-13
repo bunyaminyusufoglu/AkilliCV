@@ -1,8 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Header from '../components/Header';
+import { API_BASE_URL } from '../config/api';
 
 const HomeScreen = ({ navigation }) => {
+  const [userCount, setUserCount] = useState(0);
+
+  useEffect(() => {
+    const fetchUserCount = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/Auth/profile/count`);
+        const text = await response.text();
+        const count = parseInt(text, 10);
+        setUserCount(count);
+      } catch (error) {
+        console.error('Kullanıcı sayısı alınamadı:', error);
+      }
+    };
+  
+    fetchUserCount();
+  }, []);
+
   const handleCVUpdate = () => {
     navigation.navigate('Profilim');
   };
@@ -21,7 +39,7 @@ const HomeScreen = ({ navigation }) => {
       <View style={styles.container}>
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>75+</Text>
+            <Text style={styles.statNumber}>{userCount}+</Text>
             <Text style={styles.statTitle}>Üye</Text>
           </View>
           <View style={styles.statCard}>
@@ -38,7 +56,7 @@ const HomeScreen = ({ navigation }) => {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>CV Durumu</Text>
             <View style={styles.alertBox}>
-              <Text style={styles.alertText}>CV'nizi güncelleyebilirsiniz.</Text>
+              <Text style={styles.alertText}>CV'nizi güncel tutun.</Text>
               <TouchableOpacity onPress={handleCVUpdate} style={styles.button}>
                 <Text style={styles.buttonText}>CV'yi Güncelle</Text>
               </TouchableOpacity>
@@ -48,7 +66,7 @@ const HomeScreen = ({ navigation }) => {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Profil Durumu</Text>
             <View style={styles.alertBox}>
-              <Text style={styles.alertText}>Profilinizi düzenleyebilirsiniz.</Text>
+              <Text style={styles.alertText}>Profilinizi güncel tutun.</Text>
               <TouchableOpacity onPress={handleProfileEdit} style={styles.button}>
                 <Text style={styles.buttonText}>Profil Düzenle</Text>
               </TouchableOpacity>

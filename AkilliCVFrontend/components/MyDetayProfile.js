@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Alert, Button, TextInput, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
+
 
 const MyDetayProfile = () => {
   const [details, setDetails] = useState({
@@ -21,7 +23,7 @@ const MyDetayProfile = () => {
         console.log('Kayıtlı User ID:', storedUserId);
 
         // Kullanıcı detaylarını al
-        const detailsRes = await axios.get(`http://localhost:5189/api/UserProfile/getProfile/${storedUserId}`);
+        const detailsRes = await axios.get(`${API_BASE_URL}/UserProfile/getProfile/${storedUserId}`);
         const detailsData = detailsRes.data;
         setDetails({
           dateOfBirth: detailsData.dateOfBirth || '',
@@ -69,7 +71,7 @@ const MyDetayProfile = () => {
       };
 
       // Güncelleme işlemi
-      const response = await axios.put(`http://localhost:5189/api/UserProfile/updateProfile/${storedUserId}`, payload);
+      const response = await axios.put(`${API_BASE_URL}/UserProfile/updateProfile/${storedUserId}`, payload);
       Alert.alert('Başarılı', 'Profil güncellendi');
       setEditingDetails(false);
     } catch (err) {

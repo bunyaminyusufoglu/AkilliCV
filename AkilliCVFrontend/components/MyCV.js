@@ -5,6 +5,7 @@ import axios from 'axios';
 import * as DocumentPicker from 'expo-document-picker';
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
+import { API_BASE_URL } from '../config/api';
 
 const MyCV = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -22,7 +23,7 @@ const MyCV = () => {
         console.log('Kayıtlı User ID:', storedUserId);
 
         // CV Analysis verisini al
-        const cvAnalysisRes = await axios.get(`http://localhost:5189/api/CvAnalysis/view/${storedUserId}`);
+        const cvAnalysisRes = await axios.get(`${API_BASE_URL}/CvAnalysis/view/${storedUserId}`);
         const cvAnalysisData = cvAnalysisRes.data;
 
         // Eğer fileName varsa, cvInfo'yu güncelle
@@ -107,7 +108,7 @@ const MyCV = () => {
         });
       }
   
-      const url = `http://localhost:5189/api/CvAnalysis/upload?userId=${cvInfo.userId}`;
+      const url = `${API_BASE_URL}/CvAnalysis/upload?userId=${cvInfo.userId}`;
   
       const response = await axios.post(url, formData, {
         headers: {

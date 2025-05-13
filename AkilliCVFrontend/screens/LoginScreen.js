@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_ENDPOINTS } from '../config/api';
+import { API_BASE_URL } from '../config/api';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -9,7 +9,7 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
+      const response = await fetch(`${API_BASE_URL}/Auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -22,7 +22,6 @@ const LoginScreen = ({ navigation }) => {
   
       if (response.ok) {
         await AsyncStorage.setItem('userId', data.userId.toString());
-        await AsyncStorage.setItem('token', data.token);
         Alert.alert('Giriş başarılı!', data.message);
         navigation.replace('AnaSayfa');
       } else {

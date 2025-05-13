@@ -7,7 +7,7 @@ import Header from '../components/Header';
 import MyProfile from '../components/MyProfile';
 import MyDetayProfile from '../components/MyDetayProfile'
 import MyCV from '../components/MyCV'
-import { API_ENDPOINTS } from '../config/api';
+import { API_BASE_URL } from '../config/api';
 
 const MyProfileScreen = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -33,7 +33,7 @@ const MyProfileScreen = () => {
         console.log('Kayıtlı User ID:', storedUserId);
 
         // Kullanıcı bilgilerini al
-        const userRes = await axios.get(`${API_ENDPOINTS.AUTH.PROFILE}/${storedUserId}`);
+        const userRes = await axios.get(`${API_BASE_URL}/Auth/profile/${storedUserId}`);
         const userData = userRes.data;
         setProfile({
           name: userData.name || '',
@@ -43,7 +43,7 @@ const MyProfileScreen = () => {
         });
 
         // Kullanıcı detaylarını al
-        const detailsRes = await axios.get(`${API_ENDPOINTS.USER_PROFILE.GET_PROFILE}/${storedUserId}`);
+        const detailsRes = await axios.get(`${API_BASE_URL}/UserProfile/getProfile/${storedUserId}`);
         const detailsData = detailsRes.data;
         setDetails({
           dateOfBirth: detailsData.dateOfBirth || '',
@@ -66,7 +66,7 @@ const MyProfileScreen = () => {
         });
 
         // CV analysis verisini al
-        const cvAnalysisRes = await axios.get(`${API_ENDPOINTS.CV_ANALYSIS.VIEW}/${storedUserId}`);
+        const cvAnalysisRes = await axios.get(`${API_BASE_URL}/AI/users/${storedUserId}`);
         const cvAnalysisData = cvAnalysisRes.data;
 
         // Eğer fileName varsa, cvInfo'yu güncelle
@@ -92,12 +92,12 @@ const MyProfileScreen = () => {
       const storedUserId = await AsyncStorage.getItem('userId');
       const profilePayload = { userId: storedUserId, ...details };
 
-      const check = await axios.get(`${API_ENDPOINTS.USER_PROFILE.GET_PROFILE}/${storedUserId}`);
+      const check = await axios.get(`${API_BASE_URL}/UserProfile/getProfile/${storedUserId}`);
       if (check.data) {
-        await axios.put(`${API_ENDPOINTS.USER_PROFILE.UPDATE_PROFILE}/${storedUserId}`, profilePayload);
+        await axios.put(`${API_BASE_URL}/UserProfile/updateProfile/${storedUserId}`, profilePayload);
         Alert.alert('Başarılı', 'Profil güncellendi');
       } else {
-        await axios.post(API_ENDPOINTS.USER_PROFILE.CREATE_PROFILE, profilePayload);
+        await axios.post(`${API_BASE_URL}/UserProfile/createProfile`, profilePayload);
         Alert.alert('Başarılı', 'Profil oluşturuldu');
       }
 
@@ -148,7 +148,7 @@ const MyProfileScreen = () => {
           type: selectedFile.mimeType || 'application/pdf',
         });
   
-        const response = await axios.post(API_ENDPOINTS.CV_ANALYSIS.UPLOAD, formData, {
+        const response = await axios.post(`${API_BASE_URL}/AI/users`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
   

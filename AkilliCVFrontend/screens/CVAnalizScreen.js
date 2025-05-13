@@ -11,6 +11,8 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../components/Header';
 import { useFocusEffect } from '@react-navigation/native';
+import { API_BASE_URL } from '../config/api';
+
 
 const CVAnalizScreen = () => {
   const [loading, setLoading] = useState(false);
@@ -41,7 +43,7 @@ const CVAnalizScreen = () => {
 
       const userId = await AsyncStorage.getItem('userId');
 
-      const response = await fetch(`http://localhost:5189/api/AI/users/${userId}/analyze-cv`, {
+      const response = await fetch(`${API_BASE_URL}/AI/users/${userId}/analyze-cv`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

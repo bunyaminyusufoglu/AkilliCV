@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Alert, ScrollView, ActivityIndicator, TextInput, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
+
 
 const MyProfile = () => {
   const [profile, setProfile] = useState({ name: '', surname: '', email: '', password: '' });
@@ -17,7 +19,7 @@ const MyProfile = () => {
 
         setUserId(storedUserId);
 
-        const userRes = await axios.get(`http://localhost:5189/api/Auth/profile/${storedUserId}`);
+        const userRes = await axios.get(`${API_BASE_URL}/Auth/profile/${storedUserId}`);
         const userData = userRes.data;
 
         setProfile({
@@ -41,7 +43,7 @@ const MyProfile = () => {
     try {
       if (!userId) return;
 
-      await axios.put(`http://localhost:5189/api/Auth/updateProfile/${userId}`, profile);
+      await axios.put(`${API_BASE_URL}/Auth/updateProfile/${userId}`, profile);
       Alert.alert('Başarılı', 'Profil bilgileri güncellendi');
       setEditingBasic(false);
     } catch (error) {

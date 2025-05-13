@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_ENDPOINTS } from '../config/api';
+import { API_BASE_URL } from '../config/api';
 
 const RegisterScreen = ({ navigation }) => {
   const [name, setName] = useState('');
@@ -11,7 +11,7 @@ const RegisterScreen = ({ navigation }) => {
 
   const handleRegister = async () => {
     try {
-      const response = await fetch(API_ENDPOINTS.AUTH.REGISTER, {
+      const response = await fetch(`${API_BASE_URL}/Auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

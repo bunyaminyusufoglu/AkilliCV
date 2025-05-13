@@ -84,6 +84,12 @@ namespace AkilliCVBackend.Controllers
             return Ok("Profil başarıyla güncellendi.");
         }
 
+        [HttpGet("profile/count")]
+        public async Task<int> GetProfileCount()
+        {
+            return await _context.Users.CountAsync();
+        }
+
         [HttpGet("profile/{userId}")]
         public async Task<IActionResult> GetProfile(int userId)
         {
