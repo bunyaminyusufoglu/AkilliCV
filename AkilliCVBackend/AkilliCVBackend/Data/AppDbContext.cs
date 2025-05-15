@@ -11,7 +11,6 @@ namespace AkilliCVBackend.Data
         public DbSet<LoginUser> LoginUsers { get; set; }
         public DbSet<CV> CVs { get; set; }
         public DbSet<UserProfile> UserProfiles { get; set; }
-        public DbSet<Job> Jobs { get; set; }
 
 
     }

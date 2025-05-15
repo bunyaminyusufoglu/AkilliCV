@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System;
 using HtmlAgilityPack;
 using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace AkilliCVBackend.Controllers
 {
@@ -30,77 +32,33 @@ namespace AkilliCVBackend.Controllers
                 return NotFound("Kullanıcı profili bulunamadı.");
 
             var userSkills = userProfile.Skills.Split(',');
-            var keyword = Uri.EscapeDataString(string.Join(" ", userSkills));
 
-            // Sabit URL'yi oluşturun ve kullanıcının yeteneklerini ekleyin
-            var url = $"https://www.linkedin.com/jobs/search/?currentJobId=4227285827&distance=25&geoId=102105699&keywords={keyword}&origin=JOB_SEARCH_PAGE_SEARCH_BUTTON&refresh=true";
+            // Read job postings from a local JSON file
+            var jsonFilePath = "path/to/jobPostings.json"; // Update this path to the actual JSON file path
+            var jsonData = await System.IO.File.ReadAllTextAsync(jsonFilePath);
+            var jobPostings = JsonConvert.DeserializeObject<List<dynamic>>(jsonData);
 
-            try
+            var filteredJobs = new List<object>();
+
+            foreach (var job in jobPostings)
             {
-                // Add cookie management
-                var handler = new HttpClientHandler();
-                handler.CookieContainer = new System.Net.CookieContainer();
+                var jobTitle = job.Baslik != null ? job.Baslik.ToString() : "Başlık bulunamadı";
+                var jobContent = job.Icerik != null ? job.Icerik.ToString() : "İçerik bulunamadı";
+                var jobLocation = job.Lokasyon != null ? job.Lokasyon.ToString() : "Lokasyon bulunamadı";
 
-                // Create HttpClient with handler
-                var httpClient = new HttpClient(handler);
-
-                // Update User-Agent header
-                var request = new HttpRequestMessage(HttpMethod.Get, url);
-                request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
-
-                // Add cookies if necessary
-                // handler.CookieContainer.Add(new Uri("https://www.linkedin.com"), new Cookie("name", "value"));
-
-                // HTTP isteği gönder ve yanıtı al
-                var response = await httpClient.SendAsync(request);
-
-                // Yanıt başarılıysa, içeriği al
-                if (response.IsSuccessStatusCode)
+                // Check if job title or content contains any of the user's skills
+                if (userSkills.Any(skill => jobTitle.Contains(skill, StringComparison.OrdinalIgnoreCase) || jobContent.Contains(skill, StringComparison.OrdinalIgnoreCase)))
                 {
-                    var htmlContent = await response.Content.ReadAsStringAsync();
-
-                    // HTML içeriğini parse et
-                    var htmlDoc = new HtmlDocument();
-                    htmlDoc.LoadHtml(htmlContent);
-
-                    // Belirli bir sınıfa sahip öğeleri seç
-                    var jobNodes = htmlDoc.DocumentNode.SelectNodes("//ul[contains(@class, 'jobs-search__results-list')]");
-
-                    var jobList = new List<string>();
-                    if (jobNodes != null)
-                    {
-                        // İlk 5 <li> etiketini al
-                        var liNodes = jobNodes.Descendants("li").Take(5);
-
-                        foreach (var liNode in liNodes)
-                        {
-                            // Her <li> etiketindeki bilgileri al
-                            var jobTitleNode = liNode.SelectSingleNode(".//a[contains(@class, 'job-card-container__link')]");
-                            var companyNode = liNode.SelectSingleNode(".//span[contains(@class, 'nPkqPgpupRuxMarNgRsDMtMYCzGImGyDpY')]");
-                            var locationNode = liNode.SelectSingleNode(".//span[contains(@class, 'job-card-container__metadata-wrapper')]//li");
-
-                            var jobTitle = jobTitleNode != null ? jobTitleNode.InnerText.Trim() : "Başlık bulunamadı";
-                            var company = companyNode != null ? companyNode.InnerText.Trim() : "Şirket bulunamadı";
-                            var location = locationNode != null ? locationNode.InnerText.Trim() : "Konum bulunamadı";
-
-                            // Bilgileri birleştir ve listeye ekle
-                            var jobInfo = $"Başlık: {jobTitle}, Şirket: {company}, Konum: {location}";
-                            jobList.Add(jobInfo);
-                        }
-                    }
-
-                    return Ok(jobList);
-                }
-                else
-                {
-                    return StatusCode((int)response.StatusCode, "İş ilanları sayfası alınamadı.");
+                    // Add job details to the list
+                    filteredJobs.Add(new {
+                        Baslik = jobTitle,
+                        Icerik = jobContent,
+                        Lokasyon = jobLocation
+                    });
                 }
             }
-            catch (Exception ex)
-            {
-                // Hata durumunda loglama veya hata yönetimi yapabilirsiniz
-                return StatusCode(500, "Bir hata oluştu. Lütfen tekrar deneyin.");
-            }
+
+            return Ok(filteredJobs);
         }
     }
 }
