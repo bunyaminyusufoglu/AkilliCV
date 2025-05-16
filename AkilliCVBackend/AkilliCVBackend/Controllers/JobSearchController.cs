@@ -34,7 +34,7 @@ namespace AkilliCVBackend.Controllers
             var userSkills = userProfile.Skills.Split(',');
 
             // Read job postings from a local JSON file
-            var jsonFilePath = "path/to/jobPostings.json"; // Update this path to the actual JSON file path
+            var jsonFilePath = "Resources/Jobs.json"; // Ensure this path is correct relative to the project structure
             var jsonData = await System.IO.File.ReadAllTextAsync(jsonFilePath);
             var jobPostings = JsonConvert.DeserializeObject<List<dynamic>>(jsonData);
 
@@ -42,12 +42,13 @@ namespace AkilliCVBackend.Controllers
 
             foreach (var job in jobPostings)
             {
-                var jobTitle = job.Baslik != null ? job.Baslik.ToString() : "Başlık bulunamadı";
-                var jobContent = job.Icerik != null ? job.Icerik.ToString() : "İçerik bulunamadı";
-                var jobLocation = job.Lokasyon != null ? job.Lokasyon.ToString() : "Lokasyon bulunamadı";
+                var jobTitle = job.job_title != null ? job.job_title.ToString() : "Başlık bulunamadı";
+                var jobContent = job.job_summary != null ? job.job_summary.ToString() : "İçerik bulunamadı";
+                var jobLocation = job.job_location != null ? job.job_location.ToString() : "Lokasyon bulunamadı";
+                var jobTalents = job.talents != null ? job.talents.ToString().Split(',') : new string[0];
 
-                // Check if job title or content contains any of the user's skills
-                if (userSkills.Any(skill => jobTitle.Contains(skill, StringComparison.OrdinalIgnoreCase) || jobContent.Contains(skill, StringComparison.OrdinalIgnoreCase)))
+                // Check if any of the user's skills match the job's talents
+                if (userSkills.Any(skill => jobTalents.Contains(skill, StringComparison.OrdinalIgnoreCase)))
                 {
                     // Add job details to the list
                     filteredJobs.Add(new {
