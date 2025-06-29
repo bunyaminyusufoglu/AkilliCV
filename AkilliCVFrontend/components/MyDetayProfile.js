@@ -7,7 +7,7 @@ import { API_BASE_URL } from '../config/api';
 
 const MyDetayProfile = () => {
   const [details, setDetails] = useState({
-    dateOfBirth: '', phoneNumber: '', education: '', workExperience: '',
+    dateOfBirth: '', phoneNumber: '', email: '', education: '', workExperience: '',
     skills: '', languages: '', references: '', portfolioLink: '',
     desiredSalary: '', workTypePreference: ''
   });
@@ -19,15 +19,14 @@ const MyDetayProfile = () => {
       try {
         const storedUserId = await AsyncStorage.getItem('userId');
         if (!storedUserId) return Alert.alert('Hata', 'Kullanıcı ID bulunamadı');
-
-        console.log('Kayıtlı User ID:', storedUserId);
-
+        
         // Kullanıcı detaylarını al
         const detailsRes = await axios.get(`${API_BASE_URL}/UserProfile/getProfile/${storedUserId}`);
         const detailsData = detailsRes.data;
         setDetails({
           dateOfBirth: detailsData.dateOfBirth || '',
           phoneNumber: detailsData.phoneNumber || '',
+          email: detailsData.email || '',
           education: detailsData.education || '',
           workExperience: detailsData.workExperience || '',
           skills: detailsData.skills || '',
@@ -39,7 +38,7 @@ const MyDetayProfile = () => {
         });
       } catch (error) {
         console.error(error);
-        Alert.alert('Hata', 'Profil verisi alınamadı');
+        Alert.alert('Hata', 'Profilin detayları alınamadı');
       }
     };
 
@@ -52,6 +51,7 @@ const MyDetayProfile = () => {
       const storedUserId = await AsyncStorage.getItem('userId');
       if (!storedUserId) {
         Alert.alert('Hata', 'Kullanıcı ID bulunamadı');
+        setLoading(false);
         return;
       }
 
@@ -74,8 +74,26 @@ const MyDetayProfile = () => {
       const response = await axios.put(`${API_BASE_URL}/UserProfile/updateProfile/${storedUserId}`, payload);
       Alert.alert('Başarılı', 'Profil güncellendi');
       setEditingDetails(false);
+      
+      // Veriyi yenile
+      const updatedDetailsRes = await axios.get(`${API_BASE_URL}/UserProfile/getProfile/${storedUserId}`);
+      const updatedDetailsData = updatedDetailsRes.data;
+      setDetails({
+        dateOfBirth: updatedDetailsData.dateOfBirth || '',
+        phoneNumber: updatedDetailsData.phoneNumber || '',
+        email: updatedDetailsData.email || '',
+        education: updatedDetailsData.education || '',
+        workExperience: updatedDetailsData.workExperience || '',
+        skills: updatedDetailsData.skills || '',
+        languages: updatedDetailsData.languages || '',
+        references: updatedDetailsData.references || '',
+        portfolioLink: updatedDetailsData.portfolioLink || '',
+        desiredSalary: updatedDetailsData.desiredSalary || '',
+        workTypePreference: updatedDetailsData.workTypePreference || ''
+      });
     } catch (err) {
       console.error('Güncelleme hatası:', err);
+      console.error('Hata detayı:', err.response?.data);
       Alert.alert('Hata', 'Profil güncelleme başarısız');
     } finally {
       setLoading(false);
@@ -97,6 +115,7 @@ const MyDetayProfile = () => {
           }}
           value={value}
           onChangeText={(text) => setState(prev => ({ ...prev, [key]: text }))} 
+          placeholder={key === 'dateOfBirth' ? 'YYYY-MM-DD' : ''}
         />
       ) : (
         <Text style={{ fontSize: 16, marginTop: 5 }}>{value || '-'}</Text>
@@ -120,6 +139,7 @@ const MyDetayProfile = () => {
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
             {renderInputOrText('Doğum Tarihi', details.dateOfBirth, 'dateOfBirth', editingDetails, setDetails)}
             {renderInputOrText('Telefon Numarası', details.phoneNumber, 'phoneNumber', editingDetails, setDetails)}
+            {renderInputOrText('E-posta', details.email, 'email', editingDetails, setDetails)}
             {renderInputOrText('Eğitim', details.education, 'education', editingDetails, setDetails)}
             {renderInputOrText('İş Deneyimi', details.workExperience, 'workExperience', editingDetails, setDetails)}
             {renderInputOrText('Yetenekler', details.skills, 'skills', editingDetails, setDetails)}

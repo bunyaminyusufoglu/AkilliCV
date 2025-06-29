@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, ActivityIndicator, Linking } from 'react-native';
 import Header from '../components/Header';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../config/api';
@@ -10,6 +10,11 @@ const JobSearchScreen = () => {
   const [loading, setLoading] = useState(true);
   const [jobResults, setJobResults] = useState([]);
   const [searching, setSearching] = useState(false);
+  const [expandedJobs, setExpandedJobs] = useState({});
+  const [displayedJobs, setDisplayedJobs] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMoreJobs, setHasMoreJobs] = useState(true);
+  const jobsPerPage = 20;
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -43,15 +48,58 @@ const JobSearchScreen = () => {
 
     setSearching(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/JobSearch/list/${userData.id}`);
-      const result = await response.json();
-      setJobResults(result.jobs || result);
+      const response = await fetch(`${API_BASE_URL}/JobSearch/getJobPostings/${userData.id}`);
+      
+      // Response kontrolü
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const responseText = await response.text();
+      //console.log('API Response:', responseText);
+      
+      // Boş response kontrolü
+      if (!responseText || responseText.trim() === '') {
+        setJobResults([]);
+        setDisplayedJobs([]);
+        Alert.alert('Bilgi', 'Henüz iş ilanı bulunamadı.');
+        return;
+      }
+      
+      const result = JSON.parse(responseText);
+      
+      // API'den gelen veriyi array olarak işle
+      const jobsArray = Array.isArray(result) ? result : [result];
+      setJobResults(jobsArray);
+      
+      // İlk 20 ilanı göster
+      const initialJobs = jobsArray.slice(0, jobsPerPage);
+      setDisplayedJobs(initialJobs);
+      setCurrentPage(1);
+      setHasMoreJobs(jobsArray.length > jobsPerPage);
     } catch (error) {
       console.error('İş ilanları alınamadı:', error);
-      Alert.alert('Hata', 'İş ilanları alınırken bir hata oluştu.');
+      if (error.name === 'SyntaxError') {
+        Alert.alert('Hata', 'API\'den geçersiz veri alındı.');
+      } else {
+        Alert.alert('Hata', 'İş ilanları alınırken bir hata oluştu.');
+      }
+      setJobResults([]);
+      setDisplayedJobs([]);
     } finally {
       setSearching(false);
     }
+  };
+
+  const loadMoreJobs = () => {
+    const nextPage = currentPage + 1;
+    const startIndex = (nextPage - 1) * jobsPerPage;
+    const endIndex = startIndex + jobsPerPage;
+    const newJobs = jobResults.slice(startIndex, endIndex);
+    
+    setDisplayedJobs(prev => [...prev, ...newJobs]);
+    setCurrentPage(nextPage);
+    setHasMoreJobs(endIndex < jobResults.length);
   };
 
   if (loading) {
@@ -140,24 +188,79 @@ const JobSearchScreen = () => {
           <Text style={styles.buttonText}>{searching ? 'Aranıyor...' : 'Aramayı Başlat'}</Text>
         </TouchableOpacity>
 
-        {jobResults.length > 0 && (
+        {displayedJobs.length > 0 && (
           <View style={{ marginTop: 30 }}>
-            <Text style={styles.title}>İş İlanları</Text>
-            {jobResults.map((job, index) => (
+            <Text style={styles.title}>İş İlanları ({displayedJobs.length}/{jobResults.length})</Text>
+            {displayedJobs.map((job, index) => (
               <View key={index} style={styles.jobCard}>
-                <Text style={styles.infoLabel}>Pozisyon:</Text>
-                <Text style={styles.infoText}>{job.title}</Text>
+                <Text style={styles.jobTitle}>{job.baslik}</Text>
+                
+                <View style={styles.jobInfo}>
+                  <Text style={styles.infoLabel}>Şirket:</Text>
+                  <Text style={styles.infoText}>{job.sirket || 'Belirtilmemiş'}</Text>
+                </View>
 
-                <Text style={styles.infoLabel}>Şirket:</Text>
-                <Text style={styles.infoText}>{job.company || 'Belirtilmemiş'}</Text>
+                <View style={styles.jobInfo}>
+                  <Text style={styles.infoLabel}>Konum:</Text>
+                  <Text style={styles.infoText}>{job.lokasyon || 'Belirtilmemiş'}</Text>
+                </View>
 
-                <Text style={styles.infoLabel}>Konum:</Text>
-                <Text style={styles.infoText}>{job.location || 'Belirtilmemiş'}</Text>
+                <View style={styles.jobInfo}>
+                  <Text style={styles.infoLabel}>Yayım Tarihi:</Text>
+                  <Text style={styles.infoText}>{job.yayimTarihi || 'Belirtilmemiş'}</Text>
+                </View>
 
-                <Text style={styles.infoLabel}>Link:</Text>
-                <Text style={[styles.infoText, { color: 'blue' }]}>{job.link}</Text>
+                <View style={styles.jobInfo}>
+                  <Text style={styles.infoLabel}>Link:</Text>
+                  <TouchableOpacity onPress={() => Linking.openURL(job.link)}>
+                    <Text style={[styles.infoText, { color: 'blue', textDecorationLine: 'underline' }]}>
+                      İlanı İncele
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                {job.beceriler && job.beceriler.length > 0 && (
+                  <View style={styles.jobInfo}>
+                    <Text style={styles.infoLabel}>Beceriler:</Text>
+                    <View style={styles.skillsContainer}>
+                      {job.beceriler.map((skill, skillIndex) => (
+                        <View key={skillIndex} style={styles.skillTag}>
+                          <Text style={styles.skillText}>{skill}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+
+                {job.icerik && (
+                  <View style={styles.jobInfo}>
+                    <Text style={styles.infoLabel}>İçerik:</Text>
+                    <Text style={[styles.infoText, styles.contentText]} numberOfLines={expandedJobs[index] ? undefined : 10}>
+                      {job.icerik}
+                    </Text>
+                    {job.icerik.length > 500 && (
+                      <TouchableOpacity 
+                        onPress={() => setExpandedJobs(prev => ({
+                          ...prev,
+                          [index]: !prev[index]
+                        }))}
+                        style={styles.expandButton}
+                      >
+                        <Text style={styles.expandButtonText}>
+                          {expandedJobs[index] ? 'Daha az göster' : 'Daha fazla gör'}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                )}
               </View>
             ))}
+            
+            {hasMoreJobs && (
+              <TouchableOpacity style={styles.loadMoreButton} onPress={loadMoreJobs}>
+                <Text style={styles.loadMoreButtonText}>Daha Fazla İlan Göster</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
       </ScrollView>
@@ -226,6 +329,63 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 20,
     elevation: 3,
+  },
+  jobTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+  },
+  jobInfo: {
+    marginBottom: 8,
+  },
+  skillsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 5,
+  },
+  skillTag: {
+    backgroundColor: '#e3f2fd',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 6,
+    marginBottom: 6,
+  },
+  skillText: {
+    fontSize: 12,
+    color: '#1976d2',
+    fontWeight: '500',
+  },
+  contentText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  expandButton: {
+    marginTop: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  expandButtonText: {
+    color: '#3182ce',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  loadMoreButton: {
+    backgroundColor: '#3182ce',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  loadMoreButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

@@ -20,21 +20,18 @@ const MyCV = () => {
         const storedUserId = await AsyncStorage.getItem('userId');
         if (!storedUserId) return Alert.alert('Hata', 'Kullanıcı ID bulunamadı');
 
-        console.log('Kayıtlı User ID:', storedUserId);
-
         // CV Analysis verisini al
         const cvAnalysisRes = await axios.get(`${API_BASE_URL}/CvAnalysis/view/${storedUserId}`);
         const cvAnalysisData = cvAnalysisRes.data;
 
-        // Eğer fileName varsa, cvInfo'yu güncelle
-        if (cvAnalysisData && cvAnalysisData.fileName) {
-          setCvInfo({
-            userId: parseInt(storedUserId),
-            filePath: cvAnalysisData.filePath || '',
-            fileName: cvAnalysisData.fileName || '',
-            uploadDate: cvAnalysisData.uploadDate || '',
-          });
-        }
+        // userId her durumda set edilsin
+        setCvInfo(prev => ({
+          ...prev,
+          userId: parseInt(storedUserId),
+          filePath: cvAnalysisData.filePath || '',
+          fileName: cvAnalysisData.fileName || '',
+          uploadDate: cvAnalysisData.uploadDate || '',
+        }));
       } catch (error) {
         console.error(error);
         Alert.alert('Hata', 'Profil verisi alınamadı');

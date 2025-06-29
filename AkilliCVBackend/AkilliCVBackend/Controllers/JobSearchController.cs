@@ -24,6 +24,19 @@ namespace AkilliCVBackend.Controllers
             _httpClient = httpClient;
         }
 
+        public class JobPosting
+        {
+            public string title { get; set; }
+            public string company { get; set; }
+            public string location { get; set; }
+            public string job_link { get; set; }
+            public string posted_date { get; set; }
+            public string details { get; set; }
+            public string skills { get; set; }
+        }
+
+
+
         [HttpGet("getJobPostings/{userId}")]
         public async Task<IActionResult> GetJobPostings(int userId)
         {
@@ -31,30 +44,41 @@ namespace AkilliCVBackend.Controllers
             if (userProfile == null)
                 return NotFound("Kullanıcı profili bulunamadı.");
 
-            var userSkills = userProfile.Skills.Split(',');
+            var userSkills = userProfile.Skills.Split(',', StringSplitOptions.RemoveEmptyEntries);
 
-            // Read job postings from a local JSON file
-            var jsonFilePath = "Resources/Jobs.json"; // Ensure this path is correct relative to the project structure
+            var jsonFilePath = "Resources/Jobs.json";
+
+            if (!System.IO.File.Exists(jsonFilePath))
+                return NotFound("İş ilanları dosyası bulunamadı.");
+
             var jsonData = await System.IO.File.ReadAllTextAsync(jsonFilePath);
-            var jobPostings = JsonConvert.DeserializeObject<List<dynamic>>(jsonData);
+            var jobPostings = JsonConvert.DeserializeObject<List<JobPosting>>(jsonData);
 
             var filteredJobs = new List<object>();
 
             foreach (var job in jobPostings)
             {
-                var jobTitle = job.job_title != null ? job.job_title.ToString() : "Başlık bulunamadı";
-                var jobContent = job.job_summary != null ? job.job_summary.ToString() : "İçerik bulunamadı";
-                var jobLocation = job.job_location != null ? job.job_location.ToString() : "Lokasyon bulunamadı";
-                var jobTalents = job.talents != null ? job.talents.ToString().Split(',') : new string[0];
+                var jobTalents = !string.IsNullOrEmpty(job.skills)
+                    ? job.skills.Split('|', StringSplitOptions.RemoveEmptyEntries)
+                    : Array.Empty<string>();
 
-                // Check if any of the user's skills match the job's talents
-                if (userSkills.Any(skill => jobTalents.Contains(skill, StringComparison.OrdinalIgnoreCase)))
+                bool isMatch = userSkills.Any(userSkill =>
+                    jobTalents.Any(jobSkill =>
+                        string.Equals(userSkill.Trim(), jobSkill.Trim(), StringComparison.OrdinalIgnoreCase)
+                    )
+                );
+
+                if (isMatch)
                 {
-                    // Add job details to the list
-                    filteredJobs.Add(new {
-                        Baslik = jobTitle,
-                        Icerik = jobContent,
-                        Lokasyon = jobLocation
+                    filteredJobs.Add(new
+                    {
+                        Baslik = job.title ?? "Başlık bulunamadı",
+                        Sirket = job.company ?? "Şirket bulunamadı",
+                        Lokasyon = job.location ?? "Lokasyon bulunamadı",
+                        Link = job.job_link ?? "Link bulunamadı",
+                        YayimTarihi = job.posted_date ?? "Tarih bulunamadı",
+                        Icerik = job.details ?? "Detay bulunamadı",
+                        Beceriler = jobTalents
                     });
                 }
             }

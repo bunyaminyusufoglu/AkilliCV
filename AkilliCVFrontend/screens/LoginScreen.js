@@ -18,7 +18,6 @@ const LoginScreen = ({ navigation }) => {
       });
   
       const data = await response.json();
-      console.log('Login yanıtı:', data);
   
       if (response.ok) {
         await AsyncStorage.setItem('userId', data.userId.toString());

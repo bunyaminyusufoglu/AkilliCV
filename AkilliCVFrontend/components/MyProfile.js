@@ -30,7 +30,7 @@ const MyProfile = () => {
         });
       } catch (error) {
         console.error(error);
-        Alert.alert('Hata', 'Profil verisi alınamadı');
+        Alert.alert('Hata', 'Profil verisi alınamadı...');
       } finally {
         setLoading(false);
       }
